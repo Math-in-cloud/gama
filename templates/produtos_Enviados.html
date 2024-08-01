@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados de Entrega</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleEnv.css') }}">
+</head>
+<body>
+    <div class="cabecalho">
+        <a href="{{ url_for('home') }}">
+            <img class="casa" src="{{url_for('static', filename='casa.png') }}" width="35px" alt="Ícone de casa">
+        </a>
+        <h1>Locais de Entrega</h1>
+    </div>
+    <div class="conteudo">
+        <h1>Lista de Locais</h1>
+        <ul>
+            {% for location_name, delivery_count in locations_data %}
+                <li>{{ location_name }} - Quantidade: {{ delivery_count }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <script>
+        const locationsData = {{ locations_data | tojson | safe }};
+        console.log(locationsData);
+    </script>
+</body>
+</html>

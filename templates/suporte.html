@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suporte</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleS.css') }}">
+</head>
+<body class="body">
+    <div class="">
+        <div class="cabecalho">
+            <a href="{{ url_for('home') }}">
+                <img class="casa" src="{{ url_for('static', filename='casa.png') }}" width="35px" alt="">
+            </a>
+            <h1>Suporte</h1>
+            <div class="wats">
+                <a href="https://api.whatsapp.com/send?phone=5531972515825">
+                    <img src="{{ url_for('static', filename='watsNovo.png') }}" width="50px" alt="Fale Conosco pelo whatsapp">
+                </a>
+            </div>
+            <div class="insta">
+                <a href="https://www.instagram.com/gamateam__">
+                    <img src="{{ url_for('static', filename='insta.png') }}" width="30px" alt="Fale Conosco pelo instagram">
+                </a>
+            </div>
+        </div>
+         <!-- Exemplo no template onde as mensagens flash são exibidas -->
+         {% with messages = get_flashed_messages(with_categories=true) %}
+         {% if messages %}
+             {% for category, message in messages %}
+                 <div class="alert-message {{ category }}">
+                     {{ message }}
+                 </div>
+         {% endfor %}
+             <script>
+             // Função para remover as mensagens flash após um tempo específico
+                 setTimeout(function() {
+                     var alertDivs = document.querySelectorAll('.alert-message');
+                         alertDivs.forEach(function(alertDiv) {
+                             alertDiv.style.display = 'none';
+                         });
+                     }, 5000); // Remove após 5 segundos (5000 milissegundos)
+             </script>
+         {% endif %}
+         {% endwith %}
+        <div class="cartaoSup">
+            <form action="https://formsubmit.co/0000993813@senaimgaluno.com.br" method="post">
+                <div class="input-group">
+                    <label for="nome">Nome</label><br>
+                    <input type="text" id="nome" name="nome" placeholder="Digite seu nome" required>
+                </div><br>
+                <div class="input-group">
+                    <label for="email">E-mail</label><br>
+                    <input type="email" name="email" placeholder="Insira um email:"  required>
+                </div><br>
+                <div class="input-group">
+                    <label for="descricao">Descrição</label><br>
+                    <textarea name="message" cols = "30" rows="5" placeholder="Digite sua mensagem" required></textarea><br><br>
+                </div><br>
+                <div class="input-group">
+                    <button type="submit" value="Enviar" name="Enviar">Enviar</button>
+                </div><br>
+
+                <input type="hidden" name = "_subject" value="Novo Contato!">
+                <input type="text" name = "_honey" style="display:none;">
+                <input type="text" name = "_captcha" value="false"  style="display:none;">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

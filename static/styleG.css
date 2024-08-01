@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200..1000&display=swap');
+.container {
+    display: flex;
+    height: 100vh; /* Garante que o container ocupe a altura total da tela */
+}
+
+/* Estilo da coluna 1 */
+.coluna1 {
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #0d1a22, #5a6e71); /* Gradiente de fundo */
+    border-radius: 15px;
+    height: 100vh;
+    padding: 20px; /* Adiciona espaçamento interno */
+}
+
+/* Estilo do cartão de local */
+.cartao-local {
+    font-family: 'Nunito sans', sans-serif;
+    padding: 20px;
+    background: #394a55;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Sombra sutil */
+    width: 50%; /* Ajusta a largura do cartão */
+    max-width: 400px; /* Limita a largura máxima */
+    color: white;
+    margin-top: 180px;
+}
+.cartao-local > h2{
+    text-align: center;
+}
+/* Estilo dos campos de entrada */
+.cartao-local input[type="text"],
+.cartao-local input[type="number"] {
+    width: calc(100% - 20px); /* Ajusta a largura para acomodar o padding */
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border: 1px solid #4a5d61; /* Borda sutil */
+    background: #1c2a31; /* Cor de fundo dos campos */
+    color: white; /* Cor do texto dos campos */
+}
+
+.cartao-local input[type="text"]::placeholder,
+.cartao-local input[type="number"]::placeholder {
+    color: #9eacb7; /* Cor do texto do placeholder */
+}
+
+/* Estilo do botão */
+.cartao-local button {
+    margin-top: 15px;
+    font-family: 'Nunito sans', sans-serif;
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px; 
+    font-weight: bolder;
+    color: #0d1a22;
+    background: linear-gradient(135deg, #ffffff, #f1f1f1); /* Gradiente de fundo */
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.cartao-local button:hover {
+        background: #1a3a4e;
+        color: white;
+        transform: translateY(-6px); /* Efeito de elevação ao passar o mouse */
+        transition: transform 0.4s;
+}
+
+/* Estilo da coluna 2 (Mapa) */
+.coluna2 {
+    flex: 2;
+    position: relative;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    box-shadow: 0 0 10px white;
+    margin-left: 10px;
+}
+
+/* Estilo do cabeçalho */
+.cabecalho {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.cabecalho a img:hover {
+    transform: scale(1.1);
+    transition: transform 0.3s;
+}
+
+.casa {
+    filter: invert(65%);
+}
+
+.casa:hover {
+    filter: invert(100%);
+    vertical-align: middle;
+}
+/* Estilo do contêiner do select */
+.select-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* Estilo do select */
+.select-container select {
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 10px;
+    background: #1c2a31;
+    color: white;
+    font-size: 16px;
+    font-family: 'Nunito Sans', sans-serif;
+    appearance: none; /* Remove a aparência padrão do select */
+    cursor: pointer;
+}
+
+/* Estilo do ícone do select (seta) */
+.select-container::after {
+    content: "▼";
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #9eacb7;
+    pointer-events: none;
+}
+
+.alert-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    font-family: 'Nunito sans', sans-serif;
+}
+
+.alert-message.info {
+    background-color: #2196F3;
+}
+
+.alert-message.success {
+    background-color: #4CAF50;
+}
+
+.alert-message.warning {
+    background-color: #FFC107;
+}
+
+.alert-message.error {
+    background-color: #f44336;
+}
+/* Estilo do campo de pesquisa */
+.controls {
+    margin-top: 7px;
+    margin-left: 10px;
+    width: 400px;
+    padding: 12px 45px 12px 15px; /* Adiciona espaçamento interno ao redor do texto */
+    border: none;
+    border-radius: 10px;
+    background: #1c2a31;
+    color: white;
+    font-size: 16px;
+    font-family: 'Nunito Sans', sans-serif;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Sombra suave */
+    position: relative; /* Necessário para posicionar o ícone */
+    margin-bottom: 15px;
+}
+
+/* Ícone de pesquisa dentro do campo */
+.controls::before {
+    content: "🔍"; /* Ícone de pesquisa */
+    position: absolute;
+    right: 15px; /* Posiciona o ícone no lado direito */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #9eacb7;
+    pointer-events: none; /* Garante que o ícone não interfere na interação com o campo de entrada */
+}
+

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa de Locais de Entrega</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleL2.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="search-container">
+            <a href="{{ url_for('home') }}">
+                <img class="casa" src="{{ url_for('static', filename='casa.png') }}" width="35px" alt="Ícone de casa">
+            </a>
+            <h2>Pesquisar Locais de Entrega</h2>
+            <form method="GET" action="{{ url_for('local_entrega_pesquisa') }}">
+                <input type="text" name="search_query" placeholder="Digite o nome do local..." value="{{ request.args.get('search_query', '') }}">
+                <button type="submit"><i class="fa fa-search"></i> Buscar</button>
+            </form>
+
+            {% if deliveries %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome do Local</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for delivery in deliveries %}
+                        <tr>
+                            <td>{{ delivery.location_name }}</td>
+                            <td>{{ delivery.location_lat }}</td>
+                            <td>{{ delivery.location_lng }}</td>
+                            <td>{{ delivery.product_name }}</td>
+                            <td>{{ delivery.quantity }}</td>
+                            <td>{{ delivery.status }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="no-results">Nenhum local encontrado.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

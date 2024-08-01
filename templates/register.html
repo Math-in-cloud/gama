@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleR.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <div class="coluna1">
+            <img src="../static/gamalogo.png" alt="Logo" class="logo">
+        </div>
+        <div class="coluna2">
+            <div class="cabecalho">
+                <a href="register">REGISTER</a>
+                <a href="login">LOGIN</a>
+            </div>
+             <!-- Exemplo no template onde as mensagens flash são exibidas -->
+         {% with messages = get_flashed_messages(with_categories=true) %}
+         {% if messages %}
+             {% for category, message in messages %}
+                 <div class="alert-message {{ category }}">
+                     {{ message }}
+                 </div>
+         {% endfor %}
+             <script>
+             // Função para remover as mensagens flash após um tempo específico
+                 setTimeout(function() {
+                     var alertDivs = document.querySelectorAll('.alert-message');
+                         alertDivs.forEach(function(alertDiv) {
+                             alertDiv.style.display = 'none';
+                         });
+                     }, 5000); // Remove após 5 segundos (5000 milissegundos)
+             </script>
+         {% endif %}
+         {% endwith %}
+            <div class="cartao-login">
+                <form action="{{url_for('register')}}" method="post">
+                    <p style=" font-family: 'Roboto', sans-serif; font-size: 15px; font-weight: bolder; color: white;">
+                        Nome
+                    </p>
+                    <input type="text" name="name" placeholder="Insira seu nome:">
+                    <p style=" font-family: 'Roboto', sans-serif; font-size: 15px; font-weight: bolder; color: white;">
+                        E-mail
+                    </p>
+                    <input type="email" name="email" placeholder="Insira um email">    
+                    <p style=" font-family: 'Roboto', sans-serif; font-size: 15px; font-weight: bolder; color: white;">
+                        Senha
+                    </p>
+                    <input type="password" name="password" placeholder="Insira uma senha">
+                    <button type="submit">Cadastrar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

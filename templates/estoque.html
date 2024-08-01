@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estoque</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleE.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="cabecalho">
+            <a href="{{ url_for('home') }}">
+                <img class="casa" src="{{ url_for('static', filename='casa.png') }}" width="35px" alt="">
+            </a>
+            <h1>Estoque</h1>
+        </div>
+         <!-- Exemplo no template onde as mensagens flash são exibidas -->
+         {% with messages = get_flashed_messages(with_categories=true) %}
+         {% if messages %}
+             {% for category, message in messages %}
+                 <div class="alert-message {{ category }}">
+                     {{ message }}
+                 </div>
+         {% endfor %}
+             <script>
+             // Função para remover as mensagens flash após um tempo específico
+                 setTimeout(function() {
+                     var alertDivs = document.querySelectorAll('.alert-message');
+                         alertDivs.forEach(function(alertDiv) {
+                             alertDiv.style.display = 'none';
+                         });
+                     }, 5000); // Remove após 5 segundos (5000 milissegundos)
+             </script>
+         {% endif %}
+         {% endwith %}
+        <form action="{{ url_for('buscar_produto') }}" method="POST" class="buscar">
+            <div class="input-group">
+                <label for="cod_produto">Código do Produto:</label>
+                <input type="number" id="cod_produto" name="cod_produto">
+            </div>
+            <div class="input-group">
+                <label for="marca_produto">Marca do Produto:</label>
+                <input type="text" id="marca_produto" name="marca_produto">
+            </div>
+            <div class="input-group">
+                <label for="name">Nome do Produto:</label>
+                <input type="text" id="name" name="name">
+            </div>
+            <div class="input-group">
+                <label for="preco_min">Preço Mínimo:</label>
+                <input type="number" id="preco_min" name="preco_min" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="preco_max">Preço Máximo:</label>
+                <input type="number" id="preco_max" name="preco_max" step="0.01">
+            </div>
+            <button type="submit">Buscar</button>
+        </form>
+        <div class="infoProdutos {% if produtos|length == 1 %}single-product{% endif %}">
+            {% if produtos %}
+                {% for produto in produtos %}
+                    <div class="produto">
+                        <div class="input-group">
+                            <label for="cod_produto">Código do Produto:</label>
+                            <input type="number" id="cod_produto" name="cod_produto" value="{{ produto.cod_produto }}" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label for="name">Nome do Produto:</label>
+                            <input type="text" id="name" name="name" value="{{ produto.name }}" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label for="preco">Preço:</label>
+                            <input type="number" id="preco" name="preco" value="{{ produto.preco }}" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label for="quantidade">Quantidade:</label>
+                            <input type="number" id="quantidade" name="quantidade" value="{{ produto.quantidade }}" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label for="marca_produto">Marca:</label>
+                            <input type="text" id="marca_produto" name="marca_produto" value="{{ produto.marca_produto }}" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label for="categoria">Categoria:</label>
+                            <input type="text" id="categoria" name="categoria" value="{{ produto.categoria }}" readonly>
+                        </div>
+                        <div class="input-group">
+                            <label for="descricao">Descrição:</label>
+                            <textarea id="descricao" name="descricao" readonly>{{ produto.descricao }}</textarea>
+                        </div>
+                        <div class="input-group">
+                            <form action="{{ url_for('atualizar_produto') }}" method="POST">
+                                <input type="hidden" id="cod_produto" name="cod_produto" value="{{ produto.cod_produto }}">
+                                <label for="quantidade_adicional">Quantidade Adicional:</label>
+                                <input type="number" id="quantidade_adicional" name="quantidade_adicional" min="1" required>
+                                <button type="submit" class="atualizar-button">Atualizar</button>
+                            </form>
+                            <form action="{{ url_for('delete_product') }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este produto?');">
+                                <input type="hidden" name="cod_produto" value="{{ produto.cod_produto }}">
+                                <button type="submit" class="delete-button">Excluir Produto</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        

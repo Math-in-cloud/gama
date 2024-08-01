@@ -1,0 +1,75 @@
+/* Adicione estas regras ao seu arquivo styleH2.css */
+
+body {
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    background: rgb(5, 28, 34);
+}
+
+h2 {
+    text-align: center;
+}
+
+form {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    color: white;
+}
+th, td {
+    border: 1px solid #394a55;
+    padding: 10px;
+    text-align: left;
+}
+th {
+    background: rgb(5, 28, 34);
+}
+tr:nth-child(even) {
+    background: #2a3a40;
+}
+tr:nth-child(odd) {
+    background: #1a2a30;
+}
+.no-results {
+    text-align: center;
+    color: white;
+    margin-top: 20px;
+}
+input[type="text"] {
+    width: 200px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+}
+button {
+    width: 100px;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: #4f5b5f;
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgb(54, 73, 78);
+}
+ button:hover {
+    background: #0d1a22;
+    color: white;
+    transform: scale(1.03);
+    transition: transform 0.4s;
+}
+.casa{
+    filter: invert(65%);
+}
+.casa:hover{
+    transform: scale(1.1);
+    transition: transform 0.3s;
+    filter: invert(100%);
+}

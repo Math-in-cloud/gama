@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleH2.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body> 
+    {% if current_user.is_authenticated %}
+    
+    <div id="nav-bar">
+        <input id="nav-toggle" type="checkbox"/>
+        <div id="nav-header">
+            <a id="nav-title" href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', filename='logo-branca.png') }}" class="logo" alt="logo">
+            </a>
+            <label for="nav-toggle"><span id="nav-toggle-burger"></span></label>
+            <hr/>
+        </div>
+        <div id="nav-content">
+            <a href="{{ url_for('produto') }}" class="nav-button"><i class="fas fa-cart-plus"></i><span>Produtos</span></a>
+            <a href="{{ url_for('estoque') }}" class="nav-button"><i class="fas fa-box"></i><span>Estoque</span></a>
+            <hr/>
+            <a href="{{url_for('suporte') }}" class="nav-button"><i class="fas fa-headset"></i><span>Suporte</span></a>
+            <a href="{{ url_for('local_entrega') }}" class="nav-button"><i class="fas fa-map-marker-alt"></i><span>Local de entrega</span></a>
+            <a href="{{ url_for('local_entrega_pesquisa') }}" class="nav-button"><i class="fas fa-map-marker-alt"></i><span>Lista de locais</span></a>
+            <a href="{{ url_for('logout') }}" class="nav-button"><i class="fas fa-sign-out-alt"></i><span>Deslogar</span></a>
+            <hr/>
+            <div id="nav-content-highlight"></div>
+        </div>
+        <input id="nav-footer-toggle" type="checkbox"/>
+        <div id="nav-footer">
+            <div id="nav-footer-heading">
+                <div id="nav-footer-avatar"><img src="{{ url_for('static', filename='icon.png') }}"/></div>
+                <div id="nav-footer-titlebox">
+                    <a id="nav-footer-title" href=" " target="_blank">{{ user_name }}</a>
+                    <span id="nav-footer-subtitle">User</span>
+                </div>
+                <label for="nav-footer-toggle"><i class="fas fa-caret-up"></i></label>
+            </div>
+            <div id="nav-footer-content">
+                <!-- Caso queira inserir alguma frase abaixo do nome, escreva aqui -->
+                 <p style="text-align: center; color: white; font-family: 'Roboto', sans-serif;">Bem-Vindo</p>
+            </div>
+        </div>
+    </div>
+
+ <!-- Dashboard -->
+ <div class="dashboard">
+    <div class="dashboard-row">
+        <!-- Primeiro Dashboard de Entregas -->
+        <div class="dashboard-item">
+            <h2>Entregas por Local</h2>
+            <canvas id="deliveryChart" width="400" height="400"></canvas>
+        </div>
+        <!-- Segundo Dashboard de Entregas -->
+        <div class="dashboard-item">
+            <h2>Entregas por Local (Porcentagem)</h2>
+            <canvas id="deliveryPercentageChart" width="400" height="400"></canvas>
+        </div>
+        <!-- Dashboard de Produtos -->
+        <div class="dashboard-item">
+            <h2>Produtos</h2>
+            <canvas id="productChart" width="400" height="400"></canvas>
+        </div>
+        <!-- Dashboard de Rotatividade de Estoque e Produtos Mais Vendidos -->
+        <div class="dashboard-item">
+            <h2>Análise de Rotatividade de Estoque e Produtos Mais Vendidos</h2>
+            <canvas id="stockTurnoverChart" width="400" height="400"></canvas>
+        </div>
+        <!-- Dashboard de Métricas -->
+        <div class="dashboard-item">
+            <h2>Métricas Financeiras</h2>
+            <canvas id="metricasChart" width="400" height="400"></canvas>
+        </div>
+        <div class="dashboard-item">
+            <h2>Comparação de Vendas</h2>
+            <canvas id="comparacaoVendasChart"></canvas>
+        </div>
+
+    </div>
+</div>
+<script>
+    // Paleta de cores
+    const colors = [
+    'rgba(1, 175, 224, 0.8)',  // Azul claro (cor 2: #01afe0)
+    'rgba(0, 128, 128, 0.8)',  // Verde-água
+    'rgba(46, 139, 87, 0.8)',  // Verde-mar
+    'rgba(0, 255, 255, 0.8)',  // Ciano
+    'rgba(60, 179, 113, 0.8)', // Verde-oliva
+    'rgba(0, 255, 127, 0.8)',  // Verde limão
+    'rgba(50, 205, 50, 0.8)',   // Verde claro
+    'rgba(0, 191, 255, 0.8)',  // Azul profundo claro
+    'rgba(173, 216, 230, 0.8)',// Azul claro pastel
+    'rgba(135, 206, 250, 0.8)',// Azul celeste
+    'rgba(224, 255, 255, 0.8)',// Ciano claro
+    'rgba(240, 248, 255, 0.8)',// Alice Blue
+    'rgba(173, 216, 230, 0.8)',// Light Sky Blue
+    'rgba(176, 224, 230, 0.8)',// Powder Blue
+    'rgba(135, 206, 235, 0.8)' // Sky Blue
+];
+ 
+    // Dados para o gráfico de produtos
+    const productData = {
+            labels: [
+                'Mais caro - {{ produto_mais_caro.name }}',
+                'Mais barato - {{ produto_mais_barato.name }}',
+                'Maior quantidade - {{ produto_maior_quantidade.name }}',
+                'Menor quantidade - {{ produto_menor_quantidade.name }}'
+            ],
+            datasets: [{
+                label: 'Produtos',
+                data: [
+                    {{ produto_mais_caro.preco|default(0) }},
+                    {{ produto_mais_barato.preco|default(0) }},
+                    {{ produto_maior_quantidade.quantidade|default(0) }},
+                    {{ produto_menor_quantidade.quantidade|default(0) }}
+                ],
+                backgroundColor: colors.slice(0, 4),
+                borderColor: [
+                    'rgba(255, 255, 255)',
+                    'rgba(255, 255, 255)',
+                    'rgba(255, 255, 255)',
+                    'rgba(255, 255, 255)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        const productOptions = {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'white'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'white'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return tooltipItems[0].label;
+                        },
+                        label: function(tooltipItem) {
+                            return tooltipItem.label + ': ' + tooltipItem.formattedValue;
+                        }
+                    }
+                }
+            }
+        };
+
+        const productChartCanvas = document.getElementById('productChart');
+        if (productChartCanvas) {
+            const productChartCtx = productChartCanvas.getContext('2d');
+            new Chart(productChartCtx, {
+                type: 'bar',
+                data: productData,
+                options: productOptions
+            });
+        }
+
+        // Função para obter dados dos locais e entregas
+        function getDeliveryData() {
+            fetch('/get_delivery_locations')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao obter dados de entregas');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Dados retornados:', data);
+
+                    // Processar os dados para os gráficos
+                    const labels = data.map(item => item.name);
+                    const deliveries = data.map(item => item.deliveries);
+                    const totalDeliveries = deliveries.reduce((sum, current) => sum + current, 0);
+
+                    const deliveryData = {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Entregas por Local',
+                            data: deliveries,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderColor: 'rgba(255, 255, 255)',
+                            borderWidth: 1
+                        }]
+                    };
+
+                    const deliveryOptions = {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: 'white'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: 'white'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white'
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        return tooltipItems[0].label;
+                                    },
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.label + ': ' + tooltipItem.formattedValue;
+                                    }
+                                }
+                            }
+                        }
+                    };
+
+                    const deliveryChartCanvas = document.getElementById('deliveryChart');
+                    if (deliveryChartCanvas) {
+                        const deliveryChartCtx = deliveryChartCanvas.getContext('2d');
+                        new Chart(deliveryChartCtx, {
+                            type: 'bar',
+                            data: deliveryData,
+                            options: deliveryOptions
+                        });
+                    }
+
+                    const deliveryPercentageData = {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Entregas por Local (Porcentagem)',
+                            data: deliveries.map(delivery => (delivery / totalDeliveries) * 100),
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderColor: 'rgba(255, 255, 255)',
+                            borderWidth: 1
+                        }]
+                    };
+
+                    const deliveryPercentageOptions = {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: 'white'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: 'white'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white'
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        return tooltipItems[0].label;
+                                    },
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.label + ': ' + tooltipItem.formattedValue + '%';
+                                    }
+                                }
+                            }
+                        }
+                    };
+
+                    const deliveryPercentageChartCanvas = document.getElementById('deliveryPercentageChart');
+                    if (deliveryPercentageChartCanvas) {
+                        const deliveryPercentageChartCtx = deliveryPercentageChartCanvas.getContext('2d');
+                        new Chart(deliveryPercentageChartCtx, {
+                            type: 'pie',
+                            data: deliveryPercentageData,
+                            options: deliveryPercentageOptions
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao obter dados de entregas:', error);
+                });
+        }
+ 
+    // Função para obter dados de rotatividade de estoque e produtos mais vendidos
+    function getStockTurnoverData() {
+        fetch('/dados_rotatividade_estoque')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao obter dados de rotatividade de estoque');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Dados retornados:', data);
+ 
+                const labels = data.map(item => item.produto);
+                const totalEntregue = data.map(item => item.total_entregue);
+                const rotatividade = data.map(item => item.rotatividade);
+ 
+                const stockTurnoverData = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Entregue',
+                        data: totalEntregue,
+                        backgroundColor: colors.slice(0, 4),
+                        borderColor: 'rgba(255, 255, 255)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Rotatividade',
+                        data: rotatividade,
+                        backgroundColor: colors.slice(0, 4),
+                        borderColor: 'rgba(255, 255, 255)',
+                        borderWidth: 1
+                    }]
+                };
+                const stockTurnoverOptions = {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    return tooltipItems[0].label;
+                                },
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.formattedValue;
+                                }
+                            }
+                        }
+                    }
+                };
+ 
+                const stockTurnoverChartCanvas = document.getElementById('stockTurnoverChart');
+                if (stockTurnoverChartCanvas) {
+                    const stockTurnoverChartCtx = stockTurnoverChartCanvas.getContext('2d');
+                    new Chart(stockTurnoverChartCtx, {
+                        type: 'bar',
+                        data: stockTurnoverData,
+                        options: stockTurnoverOptions
+                    });
+                }
+            })
+            .catch(error => console.error('Erro ao obter dados de rotatividade de estoque:', error));
+    }
+ 
+    // Função para obter dados de comparação de vendas
+    function getComparacaoVendasData() {
+        fetch('/comparacao_vendas_mensais')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('comparacaoVendasChart').getContext('2d');
+                const labels = data.map(item => item.mes);
+                const vendasAnoAtual = data.map(item => item.vendas_ano_atual);
+                const vendasAnoAnterior = data.map(item => item.vendas_ano_anterior);
+ 
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Vendas Ano Atual',
+                                data: vendasAnoAtual,
+                                backgroundColor: colors.slice(0, 4),
+                                borderColor: 'rgba(255, 255, 255)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Vendas Ano Anterior',
+                                data: vendasAnoAnterior,
+                                backgroundColor: colors.slice(0, 4),
+                                borderColor: 'rgba(255, 255, 255)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: 'white'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: 'white'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white'
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        return tooltipItems[0].label;
+                                    },
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.label + ': ' + tooltipItem.formattedValue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Erro ao obter dados de comparação de vendas:', error));
+    }
+ 
+    // Função para obter dados das métricas financeiras
+    function getFinancialMetrics() {
+        fetch('/metricas_financeiras')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Dados das métricas financeiras:', data); // Verifique se os dados são recebidos corretamente
+ 
+                const metricasData = {
+                    labels: ['Receita Total', 'Custos Totais', 'Lucro Bruto', 'Lucro Líquido'],
+                    datasets: [{
+                        label: 'Métricas Financeiras',
+                        data: [
+                            data.receita_total,
+                            data.custos_totais,
+                            data.lucro_bruto,
+                            data.lucro_liquido
+                        ],
+                        backgroundColor: colors.slice(0, 4),
+                        borderColor: 'rgba(255, 255, 255, 0.8)',
+                        borderWidth: 1
+                    }]
+                };
+ 
+                const metricasOptions = {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    return tooltipItems[0].label;
+                                },
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.formattedValue;
+                                }
+                            }
+                        }
+                    }
+                };
+ 
+                const metricasCtx = document.getElementById('metricasChart').getContext('2d');
+                new Chart(metricasCtx, {
+                    type: 'bar',
+                    data: metricasData,
+                    options: metricasOptions
+                });
+            })
+            .catch(error => console.error('Erro ao obter dados das métricas financeiras:', error));
+    }
+ 
+    // Chamar funções para obter dados
+    getDeliveryData();
+    getStockTurnoverData();
+    getComparacaoVendasData();
+    getFinancialMetrics();
+ 
+ </script>
+
+    {% else %}
+    <div class="cabecalho">
+        <a href="{{url_for('login')}}" style="text-decoration: none; color: rgb(5, 28, 34); font-family: 'Roboto',sans-serif; font-weight: bolder;">Login</a>
+        <a href="{{url_for('register')}}" style="text-decoration: none; color:rgb(5, 28, 34); font-family: 'Roboto',sans-serif; font-weight: bolder;">Registrar</a>
+    </div>
+    <h1 style="text-align: center; font-family: 'Roboto',sans-serif; color:#4C0027; text-shadow: 0 0 10px #4C0027;">Visitante</h1>
+    <p style="text-align: center; font-family: 'Roboto',sans-serif; color:#4C0027; text-shadow: 0 0 10px #4C0027;">Este texto aparece se você não estiver logado.</p>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Produtos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleP.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="cabecalho">
+            <a href="{{ url_for('home') }}">
+                <img class="casa" src="{{ url_for('static', filename='casa.png') }}" width="35px" alt="">
+            </a>
+            <h1>Cadastrar</h1>
+        </div>
+        <!-- Exemplo no template onde as mensagens flash são exibidas -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert-message {{ category }}">
+                    {{ message }}
+                </div>
+        {% endfor %}
+            <script>
+            // Função para remover as mensagens flash após um tempo específico
+                setTimeout(function() {
+                    var alertDivs = document.querySelectorAll('.alert-message');
+                        alertDivs.forEach(function(alertDiv) {
+                            alertDiv.style.display = 'none';
+                        });
+                    }, 5000); // Remove após 5 segundos (5000 milissegundos)
+            </script>
+        {% endif %}
+        {% endwith %}
+        <form action="{{ url_for('produto') }}" method="POST">
+            <div class="conteudo">
+                <div class="input-group">
+                    <label for="cod_produto">Codigo Produto:</label>
+                    <input type="number" id="cod_produto" name="cod_produto" placeholder="Código do produto: " required>
+                </div>
+                <div class="input-group">
+                    <label for="name">Nome do Produto:</label>
+                    <input type="text" id="name" name="name" placeholder="Nome do produto: " required>
+                </div>
+                <div class="input-group">
+                    <label for="preco">Preço:</label>
+                    <input type="number" id="preco" name="preco" step="0.01" min="0" placeholder="Preço:" required>
+                </div>
+                <div class="input-group">
+                    <label for="quantidade">Quantidade:</label>
+                    <input type="number" id="quantidade" name="quantidade" min="1" placeholder="Quantidade:" required>
+                </div>
+                <div class="input-group">
+                    <label for="marca_produto">Marca:</label>
+                    <input type="text" id="marca_produto" name="marca_produto" placeholder="Marca do produto: ">
+                </div>
+                <div class="input-group">
+                    <label for="Categoria">Categoria:</label>
+                    <select name="categoria" id="categoria">
+                        <option value="Alimentos">Alimento</option>
+                        <option value="Bebidas">Bebidas</option>
+                        <option value="Roupas">Roupas</option>
+                        <option value="Eletrônicos">Eletrônico</option>
+                        <option value="Cosméticos">Cosméticos</option>
+                        <option value="Móveis">Móveis</option>
+                        <option value="Livros">Livros</option>   
+                        <option value="Automotivo">Automotivo</option>   
+                        <option value="Artigos Esportivos">Artigos Esportivos</option>           
+                        <option value="Mídia">Mídia</option>
+                        <option value="Jogos">Jogos</option>
+                        <option value="Automotivo">Automotivo</option>
+                        <option value="Brinquedos">Brinquedos</option>
+                        <option value="Saúde">Saúde</option>
+                        <option value="Decoração">Decoração</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="descricao">Descrição:</label>
+                    <textarea id="descricao" name="descricao" rows="4" cols="50" placeholder="Descrição do produto" required></textarea>
+                </div>
+            <button type="submit">Cadastrar produto</button>
+        </form>
+        </div>
+    </div>
+</body>
+</html>

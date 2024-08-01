@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local de Entrega</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleG.css') }}">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFg28W1NRnx48tyCEGVQpmPmVxOBoxOtQ&libraries=places"></script>
+    <style>
+        /* Estilos CSS adicionais podem ser colocados aqui conforme necessário */
+    </style>
+</head>
+<body style="background: rgb(5, 28, 34); margin: 0; padding: 0;">
+    <div class="container">
+        <!-- Coluna 1: Formulário -->
+        <div class="coluna1">
+            <div class="cartao-local">
+                <h2>Local de Entrega</h2>
+                
+
+                <form id="product-form" action="{{ url_for('send_product') }}" method="POST">
+                    <label for="produto">Produto:</label>
+                    <div class="select-container">
+                    <select id="produto" name="produto">
+                        {% for product in products %}
+                            <option value="{{ product.id }}" data-quantity="{{ product.quantidade }}">{{ product.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <br>
+                    <label for="quantidade">Quantidade:</label>
+                    <input type="number" id="quantidade" name="quantidade" min="1" required>
+                    <p id="stock-info"></p> <!-- parágrafo para exibir a quantidade em estoque --> 
+                    <label for="location">Local:</label>
+                    <input id="location-input" type="text" placeholder="Digite o endereço..." required>
+                    <input type="hidden" name="name" id="location-name"><!-- Variáveis ocultas para salvar nome, latitude e longitude -->
+                    <input type="hidden" name="lat" id="location-lat">
+                    <input type="hidden" name="lng" id="location-lng">
+                    <button type="submit">Enviar</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Coluna 2: Mapa -->
+        <div class="coluna2">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <div class="cabecalho">
+        <a href="{{ url_for('home') }}">
+            <img class="casa" src="{{ url_for('static', filename='casa.png') }}" width="35px" alt="">
+        </a>
+    </div>
+    
+     <!-- Exemplo no template onde as mensagens flash são exibidas -->
+     {% with messages = get_flashed_messages(with_categories=true) %}
+     {% if messages %}
+         {% for category, message in messages %}
+             <div class="alert-message {{ category }}">
+                 {{ message }}
+             </div>
+     {% endfor %}
+         <script>
+         // Função para remover as mensagens flash após um tempo específico
+             setTimeout(function() {
+                 var alertDivs = document.querySelectorAll('.alert-message');
+                     alertDivs.forEach(function(alertDiv) {
+                         alertDiv.style.display = 'none';
+                     });
+                 }, 5000); // Remove após 5 segundos (5000 milissegundos)
+         </script>
+     {% endif %}
+     {% endwith %}    
+     <script>
+        var map;
+        var marker;
+        var geocoder;
+    
+        function initialize() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: -23.5505, lng: -46.6333 }, // Centro inicial
+                zoom: 8
+            });
+    
+            geocoder = new google.maps.Geocoder();
+    
+            var input = document.getElementById('location-input');
+            var autocomplete = new google.maps.places.Autocomplete(input);
+            autocomplete.bindTo('bounds', map);
+    
+            autocomplete.addListener('place_changed', function() {
+                var place = autocomplete.getPlace();
+                
+                if (!place.geometry) {
+                    // Se o lugar não tem geometria, ignore-o
+                    console.log("Lugar selecionado não possui geometria");
+                    return;
+                }
+    
+                // Se o local possui geometria, atualize o mapa e o marcador
+                if (marker) {
+                    marker.setMap(null);
+                }
+                
+                marker = new google.maps.Marker({
+                    position: place.geometry.location,
+                    map: map,
+                    title: place.name
+                });
+    
+                map.setCenter(place.geometry.location);
+                map.setZoom(15); // Ajusta o zoom para o local selecionado
+    
+                // Atualiza os campos escondidos com a latitude, longitude e nome do local
+                document.getElementById('location-lat').value = place.geometry.location.lat();
+                document.getElementById('location-lng').value = place.geometry.location.lng();
+                document.getElementById('location-name').value = place.name; // Atualiza o nome do local
+            });
+    
+            document.getElementById('produto').addEventListener('change', function() {
+                var selectedOption = this.options[this.selectedIndex];
+                var quantity = selectedOption.getAttribute('data-quantity');
+                document.getElementById('stock-info').textContent = 'Quantidade em estoque: ' + quantity;
+                document.getElementById('quantidade').max = quantity;
+            });
+        }
+    
+        google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+ </body>
+ </html>
+ 
+ 
