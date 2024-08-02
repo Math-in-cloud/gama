@@ -38,7 +38,7 @@ config = {
     'user': 'root',
     'password': 'SqUKYLxsBrevFZapNANHFxHcIDzSAfWi',
     'host': 'monorail.proxy.rlwy.net',
-    'port': '20439',
+    'port': '3306',
     'database': 'railway'
 }
 def get_db_connection():
