@@ -1,0 +1,129 @@
+/* Estilo geral do container */
+.container {
+    display: flex;
+    height: 100vh; /* Garante que o container ocupe a altura total da tela */
+}
+
+/* Estilo da coluna 1 */
+.coluna1 {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #ffffff, #e0e0e0); 
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+}
+
+/* Estilo da logo */
+.logo {
+    max-width: 80%;
+}
+
+/* Estilo da coluna 2 */
+.coluna2 {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #000000, #495556);
+    border-radius: 15px;
+    height: 100vh;
+    padding: 20px;
+}
+
+/* Estilo do cabeçalho */
+.cabecalho {
+    margin-top: 50px;
+    text-align: center;
+}
+
+.cabecalho a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #d4dce0; /* Cor de texto moderna */
+    padding: 10px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    border-bottom: 2px solid transparent; /* Adiciona uma borda inferior que muda ao passar o mouse */
+    transition: border-bottom 0.3s, color 0.3s;
+}
+
+.cabecalho a:hover {
+    color: #ffffff; /* Cor do texto ao passar o mouse */
+    border-bottom: 2px solid #ffffff; /* Borda inferior ao passar o mouse */
+}
+
+/* Estilo do cartão de redefinição de senha */
+.cartao-login {
+    font-family: 'Roboto', sans-serif;
+    margin-top: 100px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente */
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Sombra sutil */
+    width: 50%; 
+    max-width: 400px; 
+    color: white;
+}
+
+/* Estilo dos campos de entrada */
+.cartao-login input[type="password"] {
+    width: calc(100% - 20px); /* Ajusta a largura para acomodar o padding */
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border: 1px solid #4a5d61; /* Borda sutil */
+    background: #1c2a31; /* Cor de fundo dos campos */
+    color: white; /* Cor do texto dos campos */
+}
+
+.cartao-login input[type="password"]::placeholder {
+    color: #9eacb7; /* Cor do texto do placeholder */
+}
+
+/* Estilo do botão */
+.cartao-login button {
+    margin-top: 15px;
+    font-family: 'Roboto', sans-serif;
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px; 
+    font-weight: bolder;
+    color: #0d1a22;
+    background: linear-gradient(135deg, #ffffff, #f1f1f1); /* Gradiente de fundo */
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra suave */
+    transition: background 0.3s, color 0.3s, transform 0.3s; /* Transições suaves */
+}
+
+.cartao-login button:hover {
+    background: #cfd8dc; /* Cor de fundo ao passar o mouse */
+    color: #0d1a22; 
+    transform: translateY(-6px); /* Efeito de elevação ao passar o mouse */
+}
+
+/* Estilo das mensagens de alerta */
+.alert-message {
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    font-size: 18px;
+    text-align: center;
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: bolder;
+}
+
+.alert-success {
+    color: #4CAF50; /* Cor verde para mensagens de sucesso */
+}
+
+.alert-error {
+    color: #F44336; /* Cor vermelha para mensagens de erro */
+}
+
+.alert-warning {
+    color: #FF9800; /* Cor laranja para mensagens de alerta */
+}
