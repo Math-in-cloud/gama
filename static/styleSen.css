@@ -1,0 +1,68 @@
+/* Estilo geral do container */
+.container {
+    display: flex;
+    height: 100vh; /* Garante que o container ocupe a altura total da tela */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Estilo da coluna 1 */
+.coluna1 {
+    display: none; /* Escondendo a coluna 1 para esta página */
+}
+
+/* Estilo da coluna 2 */
+.coluna2 {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #000000, #495556);
+    border-radius: 15px;
+    height: 100vh;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra suave */
+}
+
+/* Estilo do cabeçalho */
+.cabecalho {
+    margin-top: 50px;
+    text-align: center;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Estilo do cartão de mensagem */
+.cartao-login {
+    font-family: 'Roboto', sans-serif;
+    margin-top: 100px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente */
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Sombra sutil */
+    width: 50%; 
+    max-width: 400px; 
+    color: white;
+    text-align: center; /* Alinhamento centralizado para texto */
+}
+
+/* Estilo do link */
+.voltar-login {
+    display: inline-block;
+    margin-top: 20px;
+    font-family: 'Roboto', sans-serif;
+    color: #d4dce0;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid transparent; /* Adiciona uma borda inferior que muda ao passar o mouse */
+    background: rgba(255, 255, 255, 0.2); /* Fundo sutil */
+    transition: background 0.3s, color 0.3s, border 0.3s; /* Transições suaves */
+}
+
+.voltar-login:hover {
+    color: #ffffff; /* Cor do texto ao passar o mouse */
+    background: rgba(255, 255, 255, 0.3); /* Cor de fundo ao passar o mouse */
+    border: 1px solid #ffffff; /* Borda inferior ao passar o mouse */
+}
