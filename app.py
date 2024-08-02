@@ -11,8 +11,8 @@ import re
 import dns.resolver
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask_socketio import SocketIO, emit
-import random
-import requests
+from mailjet_rest import Client
+import requests, os, uuid
 
 app = Flask(__name__)
 
@@ -181,6 +181,100 @@ def login():
             return redirect(url_for('login'))
     return render_template('login.html')
 
+def enviar_email(destinatario, assunto, conteudo):
+    chave_api = os.getenv('MAILJET_API_KEY')
+    segredo_api = os.getenv('MAILJET_API_SECRET') 
+
+    if not chave_api or not segredo_api:
+        raise ValueError("Chave da API ou segredo da API não configurados")
+
+    mailjet = Client(auth=(chave_api, segredo_api), version='v3.1')
+    dados = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': 'matheusfagomes86@gmail.com',
+                    'Name': 'Matheus'
+                },
+                'To': [
+                    {
+                        'Email': destinatario,
+                        'Name': 'Nome do Destinatário'
+                    }
+                ],
+                'Subject': assunto,
+                'TextPart': conteudo
+            }
+        ]
+    }
+
+    try:
+        resultado = mailjet.send.create(data=dados)
+        if resultado.status_code == 200:
+            print(f"E-mail enviado para: {destinatario}")
+        else:
+            print(f"Falha ao enviar e-mail: {resultado.json()}")
+    except Exception as e:
+        print(f"Erro ao enviar e-mail: {e}")
+
+@app.route('/esqueceu-senha', methods=['GET', 'POST'])
+def esqueceu_senha():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute('SELECT * FROM User WHERE email = %s', (email,))
+            usuario = cursor.fetchone()
+
+            if usuario:
+                token = str(uuid.uuid4())
+                cursor.execute('UPDATE User SET password_reset_token = %s WHERE email = %s', (token, email))
+                conn.commit()
+
+                link_recuperacao = url_for('redefinir_senha', token=token, _external=True)
+                assunto = 'Redefinir Senha'
+                conteudo = f'Clique no link para redefinir sua senha: {link_recuperacao}'
+                enviar_email(email, assunto, conteudo)
+
+            cursor.close()
+            conn.close()
+        
+        return render_template('confirmacao_envio.html')
+
+    return render_template('esqueceu_senha.html')
+
+@app.route('/redefinir-senha/<token>', methods=['GET', 'POST'])
+def redefinir_senha(token):
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute('SELECT * FROM User WHERE password_reset_token = %s', (token,))
+        user = cursor.fetchone()
+
+        if not user:
+            flash('Token de redefinição inválido.', 'error')
+            return redirect(url_for('login'))
+        
+        if request.method == 'POST':
+            nova_senha = request.form['nova_senha']
+            confirmar_senha = request.form['confirmar_senha']
+            
+            if nova_senha != confirmar_senha:
+                flash('As senhas não coincidem. Tente novamente.', 'error')
+                return render_template('redefinir_senha.html', token=token)
+            
+            senha_hash = generate_password_hash(nova_senha, method='sha256')
+            cursor.execute('UPDATE User SET senha = %s, password_reset_token = NULL WHERE password_reset_token = %s', (senha_hash, token))
+            conn.commit()
+            
+            flash('Senha redefinida com sucesso!', 'success')
+            return redirect(url_for('login'))
+        
+        cursor.close()
+        conn.close()
+
+    return render_template('redefinir_senha.html', token=token)
 @app.route('/produto', methods=['POST', 'GET'])
 @login_required
 def produto():
