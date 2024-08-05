@@ -63,22 +63,25 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin):
-    def __init__(self, id, name, email, password):
+    def __init__(self, id, name, email, password, password_reset_token=None):
         self.id = id
         self.name = name
         self.email = email
         self.password = password
-
-
-
-login_manager.user_loader
+        self.password_reset_token = password_reset_token
+        
+@login_manager.user_loader
 def load_user(user_id):
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
         cursor.execute('SELECT id, name, email, password FROM users WHERE id = %s', (user_id,))
         user_data = cursor.fetchone()
-    return User(**user_data) if user_data else None
-
+    return User(
+        id=user_data['id'],
+        name=user_data['name'],
+        email=user_data['email'],
+        password=user_data['password']
+    ) if user_data else None
 def get_user_by_email(email):
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
