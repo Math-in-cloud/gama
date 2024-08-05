@@ -260,13 +260,13 @@ def produto():
         flash('Produto cadastrado com sucesso!')
         return redirect(url_for('produto'))
     
-    return render_template('produto.html')
+    return render_template('produtos.html')
 
 @app.route('/estoque', methods=['POST', 'GET'])
 @login_required
 def estoque():
     products = get_products()
-    return render_template('estoque.html', Product=products)
+    return render_template('estoque.html', products=products)
 
 @app.route('/metricas_financeiras', methods=['GET'])
 @login_required
@@ -277,7 +277,7 @@ def metricas_financeiras():
     cursor.execute('''
         SELECT SUM(d.quantity * p.preco) AS receita_total
         FROM deliveries d
-        JOIN Product p ON d.product_id = p.id
+        JOIN Product p ON d.Product_id = p.id
     ''')
     receita_total = cursor.fetchone()['receita_total'] or 0
 
@@ -328,10 +328,10 @@ def buscar_produto():
         params.append(preco_max)
 
     cursor.execute(query, params)
-    Product = cursor.fetchall()
+    produtos = cursor.fetchall()
     conn.close()
 
-    return render_template('Product.html', Product=Product)
+    return render_template('produtos.html', produtos=produtos)
 # Inicializa a rota atualizar produto
 @app.route('/atualizar_produto', methods=['POST'])
 @login_required
@@ -472,9 +472,9 @@ def local_entrega_pesquisa():
     if conn:
         cursor = conn.cursor(dictionary=True)
         if search_query:
-            cursor.execute("SELECT deliveries.*, Product.name AS product_name FROM deliveries JOIN Product ON deliveries.product_id = Product.id WHERE deliveries.location_name LIKE %s", (f'%{search_query}%',))
+            cursor.execute("SELECT deliveries.*, Product.name AS product_name FROM deliveries JOIN Product ON deliveries.Product_id = Product.id WHERE deliveries.location_name LIKE %s", (f'%{search_query}%',))
         else:
-            cursor.execute("SELECT deliveries.*, Product.name AS product_name FROM deliveries JOIN Product ON deliveries.product_id = Product.id")
+            cursor.execute("SELECT deliveries.*, Product.name AS product_name FROM deliveries JOIN Product ON deliveries.Product_id = Product.id")
 
         deliveries = cursor.fetchall()
         cursor.close()
@@ -638,9 +638,9 @@ def dados_rotatividade_estoque():
                 SUM(d.quantity) AS total_entregue,
                 SUM(d.quantity) / p.preco AS rotatividade
             FROM
-                product p
+                Product p
             JOIN
-                deliveries d ON p.id = d.product_id
+                deliveries d ON p.id = d.Product_id
             GROUP BY
                 p.id
             HAVING
@@ -656,9 +656,9 @@ def dados_rotatividade_estoque():
     except Exception as e:
         print('Erro ao buscar dados de rotatividade de estoque:', str(e))
         return jsonify({'error': str(e)})
-@app.route('/Product_mais_vendidos', methods=['GET'])
+@app.route('/produto_mais_vendidos', methods=['GET'])
 @login_required
-def Product_mais_vendidos():
+def produto_mais_vendidos():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -671,9 +671,9 @@ def Product_mais_vendidos():
                 p.preco,
                 p.categoria
             FROM
-                product p
+                Product p
             JOIN
-                deliveries d ON p.id = d.product_id
+                deliveries d ON p.id = d.Product_id
             GROUP BY
                 p.id
             ORDER BY
@@ -684,7 +684,7 @@ def Product_mais_vendidos():
         conn.close()
 
         # Retornando o template com os dados
-        return render_template('Product_mais_vendidos.html', top_selling_products=top_selling_products)
+        return render_template('produto_mais_vendidos.html', top_selling_products=top_selling_products)
     
     except Exception as e:
         flash(f'Erro ao calcular Product mais vendidos: {str(e)}', 'error')
@@ -706,7 +706,7 @@ def comparacao_vendas_mensais():
         FROM
             deliveries
         JOIN
-            product ON deliveries.product_id = product.id
+            Product ON deliveries.Product_id = Product.id
         WHERE
             deliveries_date >= %s
         GROUP BY
@@ -723,7 +723,7 @@ def comparacao_vendas_mensais():
         FROM
             deliveries
         JOIN
-            product ON deliveries.product_id = product.id
+            Product ON deliveries.Product_id = Product.id
         WHERE
             deliveries_date >= %s - INTERVAL 1 YEAR
         GROUP BY
@@ -760,7 +760,6 @@ def local_entrega():
 @login_required
 def logout():
     #logout do usuário.
-    logout_user()
     #limpa a sessão atual.
     session.clear()
     #Retorna para a rota login
