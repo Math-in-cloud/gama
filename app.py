@@ -68,31 +68,21 @@ class User(UserMixin):
         self.name = name
         self.email = email
         self.password = password
-        self._password_reset_token = None  # Inicializar o token como None
-
-    @property
-    def password_reset_token(self):
-        return self._password_reset_token
-
-    @password_reset_token.setter
-    def password_reset_token(self, token):
-        self._password_reset_token = token
 
 
 
-@login_manager.user_loader
+login_manager.user_loader
 def load_user(user_id):
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
+        cursor.execute('SELECT id, name, email, password FROM users WHERE id = %s', (user_id,))
         user_data = cursor.fetchone()
     return User(**user_data) if user_data else None
 
-# Funções utilitárias
 def get_user_by_email(email):
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
+        cursor.execute('SELECT id, name, email, password FROM users WHERE email = %s', (email,))
         return cursor.fetchone()
 
 def get_products():
