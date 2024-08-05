@@ -38,10 +38,7 @@
          {% endwith %}
             <div class="cartao-login">
                 <form action="{{url_for('login') }}" method="post">
-                    <p style=" font-family: 'Roboto', sans-serif; font-size: 15px; font-weight: bolder;color: white; ">
-                        Nome
-                    </p>
-                    <input type="text" name="name" placeholder="Insira seu nome:">
+
                     <p style=" font-family: 'Roboto', sans-serif; font-size: 15px; font-weight: bolder;color: white;">
                         E-mail
                     </p>
@@ -53,7 +50,8 @@
                     <input type="password" name="password" placeholder="Insira uma senha">
 
                     <button type="submit">Login</button>
-                </form>
+                    <a href="{{ url_for('esqueceu_senha') }}" style="color: white; font-size: 14px; text-align: center;">Esqueceu sua senha?</a>
+                </form> 
             </div>
         </div>
     </div>
