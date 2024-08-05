@@ -748,6 +748,13 @@ def comparacao_vendas_mensais():
         })
 
     return jsonify(dados_resposta)
+@app.route('/local_entrega', methods=['POST', 'GET'])
+@login_required
+def local_entrega():
+    #Faz uma busca no banco de dados dos produtos. 
+    products = Product.query.all()
+    #Retorna o template local_entrega.html juntamente com todos os dados dos produtos.
+    return render_template('local_entrega.html', products=products)
 #Inicialização da rota logout.
 @app.route('/logout')
 @login_required
