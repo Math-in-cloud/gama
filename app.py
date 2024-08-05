@@ -280,62 +280,50 @@ def redefinir_senha(token):
 def produto():
     if request.method == 'POST':
         cod_produto = int(request.form.get('cod_produto'))
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM produtos WHERE cod_produto = %s', (cod_produto,))
-        existing_product = cursor.fetchone()
-        conn.close()
 
-        if existing_product:
-            flash('Já existe um produto com este código.')
+        with get_db_connection() as conn:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute('SELECT * FROM produtos WHERE cod_produto = %s', (cod_produto,))
+            existing_product = cursor.fetchone()
+
+            if existing_product:
+                flash('Já existe um produto com este código.')
+                return redirect(url_for('produto'))
+
+            # Inserir novo produto
+            cursor.execute('INSERT INTO produtos (name, preco, quantidade, descricao, categoria, cod_produto, marca_produto) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
+                           (request.form.get('name'), float(request.form.get('preco')), float(request.form.get('quantidade')), 
+                            request.form.get('descricao'), request.form.get('categoria'), cod_produto, request.form.get('marca_produto')))
+            conn.commit()
+
+            flash('Produto cadastrado com sucesso!')
             return redirect(url_for('produto'))
-
-        name = request.form.get('name')
-        preco = float(request.form.get('preco'))
-        quantidade = float(request.form.get('quantidade'))
-        categoria = request.form.get('categoria')
-        descricao = request.form.get('descricao')
-        marca_produto = request.form.get('marca_produto')
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('INSERT INTO produtos (name, preco, quantidade, descricao, categoria, cod_produto, marca_produto) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
-                       (name, preco, quantidade, descricao, categoria, cod_produto, marca_produto))
-        conn.commit()
-        conn.close()
-
-        flash('Produto cadastrado com sucesso!')
-        return redirect(url_for('produto'))
     
     return render_template('produtos.html')
 
 @app.route('/estoque', methods=['POST', 'GET'])
 @login_required
 def estoque():
-    products = get_products()
-    return render_template('estoque.html', produtos=products)
+    return render_template('estoque.html', produtos=get_products())
 
 @app.route('/metricas_financeiras', methods=['GET'])
 @login_required
 def metricas_financeiras():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
 
-    cursor.execute('''
-        SELECT SUM(d.quantity * p.preco) AS receita_total
-        FROM deliveries d
-        JOIN produtos p ON d.product_id = p.id
-    ''')
-    receita_total = cursor.fetchone()['receita_total'] or 0
+        cursor.execute('''
+            SELECT SUM(d.quantity * p.preco) AS receita_total
+            FROM deliveries d
+            JOIN produtos p ON d.product_id = p.id
+        ''')
+        receita_total = cursor.fetchone()['receita_total'] or 0
 
-    cursor.execute('SELECT SUM(preco * quantidade) AS custos_totais FROM produtos')
-    custos_totais = cursor.fetchone()['custos_totais'] or 0
+        cursor.execute('SELECT SUM(preco * quantidade) AS custos_totais FROM produtos')
+        custos_totais = cursor.fetchone()['custos_totais'] or 0
 
     lucro_bruto = receita_total - custos_totais
-    despesas_operacionais = 1000  # Defina um valor fixo ou consulte uma tabela de despesas operacionais
-    lucro_liquido = lucro_bruto - despesas_operacionais
-
-    conn.close()
+    lucro_liquido = lucro_bruto - 1000  # Defina despesas operacionais fixas
 
     return jsonify({
         'receita_total': receita_total,
@@ -346,48 +334,34 @@ def metricas_financeiras():
 
 @app.route('/buscar_produto', methods=['POST'])
 def buscar_produto():
-    cod_produto = request.form.get('cod_produto')
-    name = request.form.get('name')
-    marca_produto = request.form.get('marca_produto')
-    preco_min = request.form.get('preco_min')
-    preco_max = request.form.get('preco_max')
-
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
     query = 'SELECT * FROM produtos WHERE 1=1'
     params = []
 
-    if cod_produto:
-        query += ' AND cod_produto = %s'
-        params.append(cod_produto)
-    if name:
-        query += ' AND name LIKE %s'
-        params.append(f'%{name}%')
-    if marca_produto:
-        query += ' AND marca_produto LIKE %s'
-        params.append(f'%{marca_produto}%')
-    if preco_min:
-        query += ' AND preco >= %s'
-        params.append(preco_min)
-    if preco_max:
-        query += ' AND preco <= %s'
-        params.append(preco_max)
+    for field, value in {
+        'cod_produto': request.form.get('cod_produto'),
+        'name': request.form.get('name'),
+        'marca_produto': request.form.get('marca_produto'),
+        'preco_min': request.form.get('preco_min'),
+        'preco_max': request.form.get('preco_max')
+    }.items():
+        if value:
+            query += f' AND {field} = %s'
+            params.append(value)
 
-    cursor.execute(query, params)
-    produtos = cursor.fetchall()
-    conn.close()
+    with get_db_connection() as conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(query, params)
+        produtos = cursor.fetchall()
 
     return render_template('produtos.html', produtos=produtos)
-# Inicializa a rota atualizar produto
+
 @app.route('/atualizar_produto', methods=['POST'])
 @login_required
 def atualizar_produto():
     cod_produto = request.form.get('cod_produto')
     quantidade_adicional = float(request.form.get('quantidade_adicional'))
 
-    conn = get_db_connection()
-    if conn:
+    with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM Product WHERE cod_produto = %s", (cod_produto,))
         produto = cursor.fetchone()
@@ -400,32 +374,20 @@ def atualizar_produto():
         else:
             flash('Produto não encontrado.')
 
-        cursor.close()
-        conn.close()
-    
     return redirect(url_for('estoque'))
 
 @app.route('/update_status', methods=['POST'])
 def update_status():
     data = request.json
-    delivery_id = data.get('id')
-    status = data.get('status')
-
-    conn = get_db_connection()
-    if conn:
+    with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("UPDATE Delivery SET status = %s WHERE id = %s", (status, delivery_id))
+        cursor.execute("UPDATE Delivery SET status = %s WHERE id = %s", (data.get('status'), data.get('id')))
         conn.commit()
 
         if cursor.rowcount > 0:
-            response = jsonify({'status': 'success', 'message': 'Status atualizado com sucesso!'})
+            return jsonify({'status': 'success', 'message': 'Status atualizado com sucesso!'})
         else:
-            response = jsonify({'status': 'error', 'message': 'Entrega não encontrada!'})
-
-        cursor.close()
-        conn.close()
-
-        return response
+            return jsonify({'status': 'error', 'message': 'Entrega não encontrada!'})
 
 @socketio.on('connect')
 def handle_connect():
@@ -433,78 +395,50 @@ def handle_connect():
 
 @socketio.on('request_status')
 def handle_request_status():
-    conn = get_db_connection()
-    if conn:
+    with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM Delivery")
-        deliveries = cursor.fetchall()
+        emit('status_update', {'deliveries': cursor.fetchall()})
 
-        emit('status_update', {'deliveries': deliveries})
-
-        cursor.close()
-        conn.close()
-
-# Inicializa a rota send_product
 @app.route('/send_product', methods=['POST'])
 @login_required
 def send_product():
-    location_name = request.form.get('name')
-    location_lat = request.form.get('lat')
-    location_lng = request.form.get('lng')
-    product_id = request.form.get('produto')
-    quantity = request.form.get('quantidade')
+    data = {
+        'location_name': request.form.get('name'),
+        'location_lat': float(request.form.get('lat')),
+        'location_lng': float(request.form.get('lng')),
+        'product_id': int(request.form.get('produto')),
+        'quantity': float(request.form.get('quantidade'))
+    }
 
-    print(f'Recebido - Nome: {location_name}, Latitude: {location_lat}, Longitude: {location_lng}, Produto ID: {product_id}, Quantidade: {quantity}')
+    if all(data.values()):
+        with get_db_connection() as conn:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM Product WHERE id = %s", (data['product_id'],))
+            product = cursor.fetchone()
 
-    if location_name and location_lat and location_lng and product_id and quantity:
-        try:
-            location_lat = float(location_lat)
-            location_lng = float(location_lng)
-            product_id = int(product_id)
-            quantity = float(quantity)
+            if product and product['quantidade'] >= data['quantity']:
+                cursor.execute("INSERT INTO Delivery (product_id, location_name, location_lat, location_lng, quantity, status, delivery_date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                               (data['product_id'], data['location_name'], data['location_lat'], data['location_lng'], data['quantity'], 'Saiu para entrega', datetime.now()))
+                cursor.execute("UPDATE Product SET quantidade = %s WHERE id = %s", (product['quantidade'] - data['quantity'], data['product_id']))
+                conn.commit()
 
-            conn = get_db_connection()
-            if conn:
-                cursor = conn.cursor(dictionary=True)
-                cursor.execute("SELECT * FROM Product WHERE id = %s", (product_id,))
-                product = cursor.fetchone()
-
-                if product and product['quantidade'] >= quantity:
-                    cursor.execute("INSERT INTO Delivery (product_id, location_name, location_lat, location_lng, quantity, status, delivery_date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                                   (product_id, location_name, location_lat, location_lng, quantity, 'Saiu para entrega', datetime.now()))
-                    cursor.execute("UPDATE Product SET quantidade = %s WHERE id = %s", (product['quantidade'] - quantity, product_id))
-                    conn.commit()
-
-                    flash(f'Produto {product["name"]} enviado para {location_name} com sucesso!', 'success')
-                    print(f'Produto {product["name"]} enviado para {location_name} com sucesso!')
-                else:
-                    flash('Quantidade selecionada não está disponível em estoque.', 'error')
-                    print('Quantidade selecionada não está disponível em estoque.')
-
-                cursor.close()
-                conn.close()
-
-        except ValueError as ve:
-            flash(f'Erro de conversão de dados: {str(ve)}', 'error')
-            print(f'Erro de conversão de dados: {str(ve)}')
+                flash(f'Produto {product["name"]} enviado para {data["location_name"]} com sucesso!', 'success')
+            else:
+                flash('Quantidade selecionada não está disponível em estoque.', 'error')
     else:
         flash('Dados incompletos enviados.', 'error')
-        print('Dados incompletos enviados.')
 
     return redirect(url_for('local_entrega'))
 
 @app.route('/validate_address', methods=['POST'])
 def validate_address():
-    lat = request.form.get('location_lat')
-    lng = request.form.get('location_lng')
-
     response = requests.get(GEOCODE_URL, params={
-        'latlng': f'{lat},{lng}',
+        'latlng': f'{request.form.get("location_lat")},{request.form.get("location_lng")}',
         'key': GOOGLE_MAPS_API_KEY
     })
 
     result = response.json()
-
     if result['status'] == 'OK':
         return jsonify({'status': 'success', 'address': result['results'][0]['formatted_address']})
     else:
@@ -514,22 +448,19 @@ def validate_address():
 @login_required
 def local_entrega_pesquisa():
     search_query = request.args.get('search_query', '').strip()
+    query = """
+        SELECT Delivery.*, Product.name AS product_name 
+        FROM Delivery 
+        JOIN Product ON Delivery.product_id = Product.id
+    """
+    if search_query:
+        query += " WHERE Delivery.location_name LIKE %s"
 
-    conn = get_db_connection()
-    if conn:
+    with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
-        if search_query:
-            cursor.execute("SELECT Delivery.*, Product.name AS product_name FROM Delivery JOIN Product ON Delivery.product_id = Product.id WHERE Delivery.location_name LIKE %s", (f'%{search_query}%',))
-        else:
-            cursor.execute("SELECT Delivery.*, Product.name AS product_name FROM Delivery JOIN Product ON Delivery.product_id = Product.id")
-
+        cursor.execute(query, (f'%{search_query}%',) if search_query else None)
         deliveries = cursor.fetchall()
-        cursor.close()
-        conn.close()
-    else:
-        deliveries = []
 
-    print(f'Deliveries found: {deliveries}')
     return render_template('local_entrega_pesquisa.html', deliveries=deliveries)
 
 @app.route('/delete_product', methods=['POST'])
