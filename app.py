@@ -423,7 +423,7 @@ def send_product():
                 product = cursor.fetchone()
 
                 if product and product['quantidade'] >= quantity:
-                    cursor.execute("INSERT INTO deliveries (product_id, location_name, location_lat, location_lng, quantity, status, deliveries_date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                    cursor.execute("INSERT INTO deliveries (product_id, location_name, location_lat, location_lng, quantity, status, delivery_date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                                    (product_id, location_name, location_lat, location_lng, quantity, 'Saiu para entrega', datetime.now()))
                     cursor.execute("UPDATE Product SET quantidade = %s WHERE id = %s", (product['quantidade'] - quantity, product_id))
                     conn.commit()
@@ -615,7 +615,7 @@ def check_deliveries():
         deliveries = cursor.fetchall()
 
         for deliveries in deliveries:
-            time_diff = datetime.now() - deliveries['deliveries_date']
+            time_diff = datetime.now() - deliveries['delivery_date']
             if time_diff.total_seconds() > 3600:
                 cursor.execute("UPDATE deliveries SET status = %s WHERE id = %s", ('Entregue', deliveries['id']))
                 conn.commit()
@@ -636,7 +636,7 @@ def dados_rotatividade_estoque():
             SELECT
                 p.name AS produto,
                 SUM(d.quantity) AS total_entregue,
-                SUM(d.quantity) / p.preco AS rotatividade
+                IFNULL(SUM(d.quantity) / NULLIF(p.preco, 0), 0) AS rotatividade
             FROM
                 Product p
             JOIN
@@ -701,14 +701,14 @@ def comparacao_vendas_mensais():
     # Dados do ano atual
     query_ano_atual = """
         SELECT
-            DATE_FORMAT(deliveries_date, '%Y-%m') AS mes,
+            DATE_FORMAT(delivery_date, '%Y-%m') AS mes,
             SUM(quantity * preco) AS vendas_totais
         FROM
             deliveries
         JOIN
             Product ON deliveries.Product_id = Product.id
         WHERE
-            deliveries_date >= %s
+            delivery_date >= %s
         GROUP BY
             mes
     """
@@ -718,14 +718,14 @@ def comparacao_vendas_mensais():
     # Dados do ano anterior
     query_ano_anterior = """
         SELECT
-            DATE_FORMAT(deliveries_date - INTERVAL 1 YEAR, '%Y-%m') AS mes,
+            DATE_FORMAT(delivery_date - INTERVAL 1 YEAR, '%Y-%m') AS mes,
             SUM(quantity * preco) AS vendas_totais
         FROM
             deliveries
         JOIN
             Product ON deliveries.Product_id = Product.id
         WHERE
-            deliveries_date >= %s - INTERVAL 1 YEAR
+            delivery_date >= %s - INTERVAL 1 YEAR
         GROUP BY
             mes
     """
