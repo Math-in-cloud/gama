@@ -91,7 +91,7 @@ def get_user_by_email(email):
 def get_products():
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM produtos')
+        cursor.execute('SELECT * FROM Product')
         return cursor.fetchall()
 
 def get_deliveries():
@@ -235,7 +235,7 @@ def produto():
         cod_produto = int(request.form.get('cod_produto'))
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM produtos WHERE cod_produto = %s', (cod_produto,))
+        cursor.execute('SELECT * FROM Product WHERE cod_produto = %s', (cod_produto,))
         existing_product = cursor.fetchone()
         conn.close()
 
@@ -252,7 +252,7 @@ def produto():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO produtos (name, preco, quantidade, descricao, categoria, cod_produto, marca_produto) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
+        cursor.execute('INSERT INTO Product (name, preco, quantidade, descricao, categoria, cod_produto, marca_produto) VALUES (%s, %s, %s, %s, %s, %s, %s)', 
                        (name, preco, quantidade, descricao, categoria, cod_produto, marca_produto))
         conn.commit()
         conn.close()
@@ -260,13 +260,13 @@ def produto():
         flash('Produto cadastrado com sucesso!')
         return redirect(url_for('produto'))
     
-    return render_template('produtos.html')
+    return render_template('Product.html')
 
 @app.route('/estoque', methods=['POST', 'GET'])
 @login_required
 def estoque():
     products = get_products()
-    return render_template('estoque.html', produtos=products)
+    return render_template('estoque.html', Product=products)
 
 @app.route('/metricas_financeiras', methods=['GET'])
 @login_required
@@ -277,11 +277,11 @@ def metricas_financeiras():
     cursor.execute('''
         SELECT SUM(d.quantity * p.preco) AS receita_total
         FROM deliveries d
-        JOIN produtos p ON d.product_id = p.id
+        JOIN Product p ON d.product_id = p.id
     ''')
     receita_total = cursor.fetchone()['receita_total'] or 0
 
-    cursor.execute('SELECT SUM(preco * quantidade) AS custos_totais FROM produtos')
+    cursor.execute('SELECT SUM(preco * quantidade) AS custos_totais FROM Product')
     custos_totais = cursor.fetchone()['custos_totais'] or 0
 
     lucro_bruto = receita_total - custos_totais
@@ -308,7 +308,7 @@ def buscar_produto():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    query = 'SELECT * FROM produtos WHERE 1=1'
+    query = 'SELECT * FROM Product WHERE 1=1'
     params = []
 
     if cod_produto:
@@ -328,10 +328,10 @@ def buscar_produto():
         params.append(preco_max)
 
     cursor.execute(query, params)
-    produtos = cursor.fetchall()
+    Product = cursor.fetchall()
     conn.close()
 
-    return render_template('produtos.html', produtos=produtos)
+    return render_template('Product.html', Product=Product)
 # Inicializa a rota atualizar produto
 @app.route('/atualizar_produto', methods=['POST'])
 @login_required
@@ -656,14 +656,14 @@ def dados_rotatividade_estoque():
     except Exception as e:
         print('Erro ao buscar dados de rotatividade de estoque:', str(e))
         return jsonify({'error': str(e)})
-@app.route('/produtos_mais_vendidos', methods=['GET'])
+@app.route('/Product_mais_vendidos', methods=['GET'])
 @login_required
-def produtos_mais_vendidos():
+def Product_mais_vendidos():
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # Consulta para obter os produtos mais vendidos
+        # Consulta para obter os Product mais vendidos
         query = """
             SELECT
                 p.name AS produto,
@@ -684,10 +684,10 @@ def produtos_mais_vendidos():
         conn.close()
 
         # Retornando o template com os dados
-        return render_template('produtos_mais_vendidos.html', top_selling_products=top_selling_products)
+        return render_template('Product_mais_vendidos.html', top_selling_products=top_selling_products)
     
     except Exception as e:
-        flash(f'Erro ao calcular produtos mais vendidos: {str(e)}', 'error')
+        flash(f'Erro ao calcular Product mais vendidos: {str(e)}', 'error')
         return redirect(url_for('home'))
 
 @app.route('/comparacao_vendas_mensais', methods=['GET'])
