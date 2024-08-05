@@ -34,7 +34,7 @@ scheduler = BackgroundScheduler()
 
 # Configurações do banco de dados MySQL
 # Configuração de conexão com o MySQL
-config = {
+conn = mysql.connector.connect{
     'user': 'root',
     'password': 'SqUKYLxsBrevFZapNANHFxHcIDzSAfWi',
     'host': 'monorail.proxy.rlwy.net',
@@ -43,7 +43,7 @@ config = {
 }
 def get_db_connection():
     try:
-        conn = mysql.connector.connect(**config)  # Usando 'config' diretamente
+        conn = mysql.connector.connect(**conn)  # Usando 'config' diretamente
         if conn.is_connected():
             return conn
         else:
