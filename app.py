@@ -197,12 +197,12 @@ def esqueceu_senha():
         email = request.form.get('email')
         with get_db_connection() as conn:
             cursor = conn.cursor(dictionary=True)
-            cursor.execute('SELECT * FROM User WHERE email = %s', (email,))
+            cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
             usuario = cursor.fetchone()
 
             if usuario:
                 token = str(uuid.uuid4())
-                cursor.execute('UPDATE User SET password_reset_token = %s WHERE email = %s', (token, email))
+                cursor.execute('UPDATE users SET password_reset_token = %s WHERE email = %s', (token, email))
                 conn.commit()
                 link_recuperacao = url_for('redefinir_senha', token=token, _external=True)
                 enviar_email(email, 'Redefinir Senha', f'Clique no link para redefinir sua senha: {link_recuperacao}')
@@ -215,7 +215,7 @@ def esqueceu_senha():
 def redefinir_senha(token):
     with get_db_connection() as conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute('SELECT * FROM User WHERE password_reset_token = %s', (token,))
+        cursor.execute('SELECT * FROM users WHERE password_reset_token = %s', (token,))
         user = cursor.fetchone()
 
         if not user:
