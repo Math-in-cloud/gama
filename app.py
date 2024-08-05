@@ -260,7 +260,7 @@ def produto():
         flash('Produto cadastrado com sucesso!')
         return redirect(url_for('produto'))
     
-    return render_template('Product.html')
+    return render_template('produto.html')
 
 @app.route('/estoque', methods=['POST', 'GET'])
 @login_required
