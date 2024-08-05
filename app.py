@@ -63,12 +63,21 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin):
-    def __init__(self, id, name, email, password, password_reset_token=None):
+    def __init__(self, id, name, email, password):
         self.id = id
         self.name = name
         self.email = email
         self.password = password
-        self.password_reset_token = password_reset_token
+        self._password_reset_token = None  # Inicializar o token como None
+
+    @property
+    def password_reset_token(self):
+        return self._password_reset_token
+
+    @password_reset_token.setter
+    def password_reset_token(self, token):
+        self._password_reset_token = token
+
 
 
 @login_manager.user_loader
