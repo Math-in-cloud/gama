@@ -361,13 +361,13 @@ def atualizar_produto():
 @app.route('/update_status', methods=['POST'])
 def update_status():
     data = request.json
-    delivery_id = data.get('id')
+    deliveries_id = data.get('id')
     status = data.get('status')
 
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor()
-        cursor.execute("UPDATE Delivery SET status = %s WHERE id = %s", (status, delivery_id))
+        cursor.execute("UPDATE deliveries SET status = %s WHERE id = %s", (status, deliveries_id))
         conn.commit()
 
         if cursor.rowcount > 0:
@@ -389,7 +389,7 @@ def handle_request_status():
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Delivery")
+        cursor.execute("SELECT * FROM deliveries")
         deliveries = cursor.fetchall()
 
         emit('status_update', {'deliveries': deliveries})
@@ -423,7 +423,7 @@ def send_product():
                 product = cursor.fetchone()
 
                 if product and product['quantidade'] >= quantity:
-                    cursor.execute("INSERT INTO Delivery (product_id, location_name, location_lat, location_lng, quantity, status, delivery_date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                    cursor.execute("INSERT INTO deliveries (product_id, location_name, location_lat, location_lng, quantity, status, deliveries_date) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                                    (product_id, location_name, location_lat, location_lng, quantity, 'Saiu para entrega', datetime.now()))
                     cursor.execute("UPDATE Product SET quantidade = %s WHERE id = %s", (product['quantidade'] - quantity, product_id))
                     conn.commit()
@@ -472,9 +472,9 @@ def local_entrega_pesquisa():
     if conn:
         cursor = conn.cursor(dictionary=True)
         if search_query:
-            cursor.execute("SELECT Delivery.*, Product.name AS product_name FROM Delivery JOIN Product ON Delivery.product_id = Product.id WHERE Delivery.location_name LIKE %s", (f'%{search_query}%',))
+            cursor.execute("SELECT deliveries.*, Product.name AS product_name FROM deliveries JOIN Product ON deliveries.product_id = Product.id WHERE deliveries.location_name LIKE %s", (f'%{search_query}%',))
         else:
-            cursor.execute("SELECT Delivery.*, Product.name AS product_name FROM Delivery JOIN Product ON Delivery.product_id = Product.id")
+            cursor.execute("SELECT deliveries.*, Product.name AS product_name FROM deliveries JOIN Product ON deliveries.product_id = Product.id")
 
         deliveries = cursor.fetchall()
         cursor.close()
@@ -526,9 +526,9 @@ def suporte():
     return render_template('suporte.html')
 
 
-@app.route('/delivery_locations_list', methods=['GET'])
+@app.route('/deliveries_locations_list', methods=['GET'])
 @login_required
-def delivery_locations_list():
+def deliveries_locations_list():
     try:
         search_query = request.args.get('search_query', '').strip()
         
@@ -542,7 +542,7 @@ def delivery_locations_list():
                     location_name,
                     SUM(quantity) AS total_quantity
                 FROM
-                    delivery
+                    deliveries
                 WHERE
                     location_name LIKE %s
                 GROUP BY
@@ -555,7 +555,7 @@ def delivery_locations_list():
                     location_name,
                     SUM(quantity) AS total_quantity
                 FROM
-                    delivery
+                    deliveries
                 GROUP BY
                     location_name
             """
@@ -565,37 +565,37 @@ def delivery_locations_list():
         conn.close()
 
         # Convertendo os resultados em dicionários
-        delivery_counts = {delivery['location_name']: delivery['total_quantity'] for delivery in deliveries}
+        deliveries_counts = {deliveries['location_name']: deliveries['total_quantity'] for deliveries in deliveries}
 
-        return jsonify(delivery_counts)
+        return jsonify(deliveries_counts)
     
     except Exception as e:
         print(f'Erro ao buscar locais de entrega: {str(e)}')
         return jsonify({'error': str(e)})
 
 
-@app.route('/get_delivery_locations', methods=['GET'])
-def get_delivery_locations():
+@app.route('/get_deliveries_locations', methods=['GET'])
+def get_deliveries_locations():
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Delivery")
+        cursor.execute("SELECT * FROM deliveries")
         deliveries = cursor.fetchall()
         cursor.close()
         conn.close()
 
-        delivery_counts = {}
-        for delivery in deliveries:
-            if delivery['location_name'] in delivery_counts:
-                delivery_counts[delivery['location_name']] += delivery['quantity']
+        deliveries_counts = {}
+        for deliveries in deliveries:
+            if deliveries['location_name'] in deliveries_counts:
+                deliveries_counts[deliveries['location_name']] += deliveries['quantity']
             else:
-                delivery_counts[delivery['location_name']] = delivery['quantity']
+                deliveries_counts[deliveries['location_name']] = deliveries['quantity']
 
-        total_deliveries = sum(delivery_counts.values())
+        total_deliveries = sum(deliveries_counts.values())
         if total_deliveries == 0:
-            percentages = {location: 0 for location in delivery_counts.keys()}
+            percentages = {location: 0 for location in deliveries_counts.keys()}
         else:
-            percentages = {location: (quantity / total_deliveries) * 100 for location, quantity in delivery_counts.items()}
+            percentages = {location: (quantity / total_deliveries) * 100 for location, quantity in deliveries_counts.items()}
 
         return jsonify({
             'labels': list(percentages.keys()),
@@ -611,13 +611,13 @@ def check_deliveries():
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Delivery WHERE status = 'Saiu para entrega'")
+        cursor.execute("SELECT * FROM deliveries WHERE status = 'Saiu para entrega'")
         deliveries = cursor.fetchall()
 
-        for delivery in deliveries:
-            time_diff = datetime.now() - delivery['delivery_date']
+        for deliveries in deliveries:
+            time_diff = datetime.now() - deliveries['deliveries_date']
             if time_diff.total_seconds() > 3600:
-                cursor.execute("UPDATE Delivery SET status = %s WHERE id = %s", ('Entregue', delivery['id']))
+                cursor.execute("UPDATE deliveries SET status = %s WHERE id = %s", ('Entregue', deliveries['id']))
                 conn.commit()
 
         cursor.close()
@@ -640,7 +640,7 @@ def dados_rotatividade_estoque():
             FROM
                 product p
             JOIN
-                delivery d ON p.id = d.product_id
+                deliveries d ON p.id = d.product_id
             GROUP BY
                 p.id
             HAVING
@@ -673,7 +673,7 @@ def Product_mais_vendidos():
             FROM
                 product p
             JOIN
-                delivery d ON p.id = d.product_id
+                deliveries d ON p.id = d.product_id
             GROUP BY
                 p.id
             ORDER BY
@@ -701,14 +701,14 @@ def comparacao_vendas_mensais():
     # Dados do ano atual
     query_ano_atual = """
         SELECT
-            DATE_FORMAT(delivery_date, '%Y-%m') AS mes,
+            DATE_FORMAT(deliveries_date, '%Y-%m') AS mes,
             SUM(quantity * preco) AS vendas_totais
         FROM
-            delivery
+            deliveries
         JOIN
-            product ON delivery.product_id = product.id
+            product ON deliveries.product_id = product.id
         WHERE
-            delivery_date >= %s
+            deliveries_date >= %s
         GROUP BY
             mes
     """
@@ -718,14 +718,14 @@ def comparacao_vendas_mensais():
     # Dados do ano anterior
     query_ano_anterior = """
         SELECT
-            DATE_FORMAT(delivery_date - INTERVAL 1 YEAR, '%Y-%m') AS mes,
+            DATE_FORMAT(deliveries_date - INTERVAL 1 YEAR, '%Y-%m') AS mes,
             SUM(quantity * preco) AS vendas_totais
         FROM
-            delivery
+            deliveries
         JOIN
-            product ON delivery.product_id = product.id
+            product ON deliveries.product_id = product.id
         WHERE
-            delivery_date >= %s - INTERVAL 1 YEAR
+            deliveries_date >= %s - INTERVAL 1 YEAR
         GROUP BY
             mes
     """
