@@ -624,7 +624,6 @@ def check_deliveries():
         conn.close()
 
 scheduler.add_job(check_deliveries, IntervalTrigger(minutes=1), id='check_deliveries_job')
-
 @app.route('/dados_rotatividade_estoque', methods=['GET'])
 @login_required
 def dados_rotatividade_estoque():
@@ -642,9 +641,9 @@ def dados_rotatividade_estoque():
             JOIN
                 deliveries ON Product.id = deliveries.Product_id
             GROUP BY
-                Product.id
+                Product.id, Product.name, Product.preco
             HAVING
-                IFNULL(SUM(deliveries.quantity) / NULLIF(Product.preco, 0), 0) != 0
+                rotatividade != 0
         """
         cursor.execute(query)
         rotation_data = cursor.fetchall()
@@ -655,6 +654,7 @@ def dados_rotatividade_estoque():
     except Exception as e:
         print('Erro ao buscar dados de rotatividade de estoque:', str(e))
         return jsonify({'error': str(e)})
+
 
 
 @app.route('/produto_mais_vendidos', methods=['GET'])
