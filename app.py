@@ -624,6 +624,7 @@ def check_deliveries():
         conn.close()
 
 scheduler.add_job(check_deliveries, IntervalTrigger(minutes=1), id='check_deliveries_job')
+
 @app.route('/dados_rotatividade_estoque', methods=['GET'])
 @login_required
 def dados_rotatividade_estoque():
@@ -639,7 +640,7 @@ def dados_rotatividade_estoque():
             FROM
                 Product
             JOIN
-                deliveries  ON Procuct.id = deliveries.Product_id
+                deliveries ON Product.id = deliveries.Product_id
             GROUP BY
                 Product.id
             HAVING
