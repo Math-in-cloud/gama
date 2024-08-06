@@ -641,7 +641,7 @@ def dados_rotatividade_estoque():
             JOIN
                 deliveries  ON Procuct.id = deliveries.Product_id
             GROUP BY
-                p.id
+                Product.id
             HAVING
                 IFNULL(SUM(deliveries.quantity) / NULLIF(Product.preco, 0), 0) != 0
         """
