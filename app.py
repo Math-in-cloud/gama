@@ -275,7 +275,7 @@ def metricas_financeiras():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute('''
-        SELECT SUM(d.quantity * p.preco) AS receita_total
+        SELECT SUM(d.quantity * preco) AS receita_total
         FROM deliveries d
         JOIN Product p ON d.Product_id = p.id
     ''')
@@ -635,7 +635,7 @@ def dados_rotatividade_estoque():
             SELECT
                 p.name AS produto,
                 SUM(d.quantity) AS total_entregue,
-                IFNULL(SUM(d.quantity) / NULLIF(p.preco, 0), 0) AS rotatividade
+                IFNULL(SUM(d.quantity) / NULLIF(preco, 0), 0) AS rotatividade
             FROM
                 Product p
             JOIN
@@ -643,7 +643,7 @@ def dados_rotatividade_estoque():
             GROUP BY
                 p.id
             HAVING
-                IFNULL(SUM(d.quantity) / NULLIF(p.preco, 0), 0) != 0
+                IFNULL(SUM(d.quantity) / NULLIF(preco, 0), 0) != 0
         """
         cursor.execute(query)
         rotation_data = cursor.fetchall()
@@ -668,7 +668,7 @@ def produto_mais_vendidos():
             SELECT
                 p.name AS produto,
                 SUM(d.quantity) AS total_vendido,
-                p.preco,
+                preco,
                 p.categoria
             FROM
                 Product p
