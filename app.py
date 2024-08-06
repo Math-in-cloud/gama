@@ -633,17 +633,17 @@ def dados_rotatividade_estoque():
 
         query = """
             SELECT
-                p.name AS produto,
-                SUM(d.quantity) AS total_entregue,
-                IFNULL(SUM(d.quantity) / NULLIF(preco, 0), 0) AS rotatividade
+                Product.name AS produto,
+                SUM(deliveries.quantity) AS total_entregue,
+                IFNULL(SUM(deliveries.quantity) / NULLIF(Product.preco, 0), 0) AS rotatividade
             FROM
-                Product p
+                Product
             JOIN
-                deliveries d ON p.id = d.Product_id
+                deliveries  ON Procuct.id = deliveries.Product_id
             GROUP BY
                 p.id
             HAVING
-                IFNULL(SUM(d.quantity) / NULLIF(preco, 0), 0) != 0
+                IFNULL(SUM(deliveries.quantity) / NULLIF(Product.preco, 0), 0) != 0
         """
         cursor.execute(query)
         rotation_data = cursor.fetchall()
