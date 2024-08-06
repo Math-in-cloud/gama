@@ -331,7 +331,7 @@ def buscar_produto():
     produtos = cursor.fetchall()
     conn.close()
 
-    return render_template('produtos.html', produtos=produtos)
+    return render_template('estoque.html', produtos=produtos)
 # Inicializa a rota atualizar produto
 @app.route('/atualizar_produto', methods=['POST'])
 @login_required
