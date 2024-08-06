@@ -631,7 +631,6 @@ def dados_rotatividade_estoque():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # Consulta para calcular a rotatividade do estoque
         query = """
             SELECT
                 p.name AS produto,
@@ -644,18 +643,19 @@ def dados_rotatividade_estoque():
             GROUP BY
                 p.id
             HAVING
-                p.preco != 0
+                IFNULL(SUM(d.quantity) / NULLIF(p.preco, 0), 0) != 0
         """
         cursor.execute(query)
         rotation_data = cursor.fetchall()
         conn.close()
 
-        # Retornando os dados em formato JSON
         return jsonify(rotation_data)
     
     except Exception as e:
         print('Erro ao buscar dados de rotatividade de estoque:', str(e))
         return jsonify({'error': str(e)})
+
+
 @app.route('/produto_mais_vendidos', methods=['GET'])
 @login_required
 def produto_mais_vendidos():
