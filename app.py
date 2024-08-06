@@ -751,9 +751,25 @@ def comparacao_vendas_mensais():
 @app.route('/local_entrega', methods=['POST', 'GET'])
 @login_required
 def local_entrega():
-    #Faz uma busca no banco de dados dos produtos. 
-    products = Product.query.all()
-    #Retorna o template local_entrega.html juntamente com todos os dados dos produtos.
+    try:
+        # Conectar ao banco de dados MySQL
+        connection = mysql.connector.connect(**config)
+        
+        if connection.is_connected():
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM Product")
+            products = cursor.fetchall()
+    
+    except Error as e:
+        print(f"Erro ao conectar ao MySQL: {e}")
+        products = []
+    
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+    
+    # Retorna o template local_entrega.html juntamente com todos os dados dos produtos.
     return render_template('local_entrega.html', products=products)
 #Inicialização da rota logout.
 @app.route('/logout')
