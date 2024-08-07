@@ -493,25 +493,37 @@ def delete_product():
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Product WHERE cod_produto = %s", (cod_produto,))
-        produto = cursor.fetchone()
+        try:
+            cursor.execute("SELECT * FROM Product WHERE cod_produto = %s", (cod_produto,))
+            produto = cursor.fetchone()
 
-        if produto:
-            try:
-                # Deleta todas as entregas relacionadas ao produto
-                cursor.execute("DELETE FROM deliveries WHERE product_id = %s", (cod_produto,))
-                # Deleta o produto
-                cursor.execute("DELETE FROM Product WHERE cod_produto = %s", (cod_produto,))
-                conn.commit()
-                flash(f'Produto {produto["name"]} deletado com sucesso.', 'success')
-                print(f'Produto {produto["name"]} deletado com sucesso.', 'success')
-            except Exception as e:
-                conn.rollback()
-                flash(f'Erro ao deletar produto: {str(e)}', 'error')
-                print(f'Erro ao deletar produto: {str(e)}', 'error')
-        else:
-            flash(f'Produto com código {cod_produto} não encontrado.', 'error')
-            print(f'Produto com código {cod_produto} não encontrado.', 'error')
+            if produto:
+                try:
+                    # Verifique se há entregas relacionadas ao produto
+                    cursor.execute("SELECT * FROM deliveries WHERE product_id = %s", (cod_produto,))
+                    entregas = cursor.fetchall()
+
+                    if entregas:
+                        # Deleta todas as entregas relacionadas ao produto
+                        cursor.execute("DELETE FROM deliveries WHERE product_id = %s", (cod_produto,))
+
+                    # Deleta o produto
+                    cursor.execute("DELETE FROM Product WHERE cod_produto = %s", (cod_produto,))
+                    conn.commit()
+                    flash(f'Produto {produto["name"]} deletado com sucesso.', 'success')
+                    print(f'Produto {produto["name"]} deletado com sucesso.', 'success')
+                except Exception as e:
+                    conn.rollback()
+                    flash(f'Erro ao deletar produto: {str(e)}', 'error')
+                    print(f'Erro ao deletar produto: {str(e)}', 'error')
+            else:
+                flash(f'Produto com código {cod_produto} não encontrado.', 'error')
+                print(f'Produto com código {cod_produto} não encontrado.', 'error')
+
+        except Exception as e:
+            conn.rollback()
+            flash(f'Erro ao consultar produto: {str(e)}', 'error')
+            print(f'Erro ao consultar produto: {str(e)}', 'error')
 
         cursor.close()
         conn.close()
