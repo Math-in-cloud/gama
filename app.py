@@ -590,8 +590,8 @@ def deliveries_locations_list():
         return jsonify({'error': str(e)})
 
 
-@app.route('/get_deliveries_locations', methods=['GET'])
-def get_deliveries_locations():
+@app.route('/get_delivery_locations', methods=['GET'])
+def get_delivery_locations():
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
