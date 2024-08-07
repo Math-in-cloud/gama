@@ -1,6 +1,7 @@
 #importações de blibliotecas
 # Importações de bibliotecas
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, ur
+l_for, session, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 import mysql.connector
 from mysql.connector import Error
@@ -498,6 +499,9 @@ def delete_product():
 
         if produto:
             try:
+                # Deleta todas as entregas relacionadas ao produto
+                cursor.execute("DELETE FROM deliveries WHERE product_id = %s", (cod_produto,))
+                # Deleta o produto
                 cursor.execute("DELETE FROM Product WHERE cod_produto = %s", (cod_produto,))
                 conn.commit()
                 flash(f'Produto {produto["name"]} deletado com sucesso.', 'success')
@@ -514,6 +518,7 @@ def delete_product():
         conn.close()
 
     return redirect(url_for('estoque'))
+
 
 @app.route('/vendas', methods=['POST', 'GET'])
 @login_required
