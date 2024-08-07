@@ -615,14 +615,12 @@ def get_deliveries_locations():
                     deliveries_counts[location] = quantity
 
             total_deliveries = sum(deliveries_counts.values())
-            if total_deliveries == 0:
-                percentages = {location: 0 for location in deliveries_counts.keys()}
-            else:
-                percentages = {location: (quantity / total_deliveries) * 100 for location, quantity in deliveries_counts.items()}
+            percentages = {location: (quantity / total_deliveries) * 100 for location, quantity in deliveries_counts.items()}
 
             return jsonify({
-                'labels': list(deliveries_counts.keys()),
-                'percentages': list(percentages.values())
+                'totals': list(deliveries_counts.values()),  # Total de entregas por local
+                'labels': list(deliveries_counts.keys()),    # Nomes dos locais
+                'percentages': list(percentages.values())    # Porcentagens
             })
 
         except Exception as e:
