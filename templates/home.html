@@ -173,135 +173,88 @@
             });
         }
 
-        // Função para obter dados dos locais e entregas
         function getDeliveryData() {
-            fetch('/get_delivery_locations')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erro ao obter dados de entregas');
+    fetch('/get_deliveries_locations')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro ao obter dados de entregas');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Dados retornados:', data);
+
+            const labels = data.labels;
+            const percentages = data.percentages;
+
+            const deliveryData = {
+                labels: labels,
+                datasets: [{
+                    label: 'Entregas por Local',
+                    data: percentages,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderColor: 'rgba(255, 255, 255)',
+                    borderWidth: 1
+                }]
+            };
+
+            const deliveryOptions = {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'white'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'white'
+                        }
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Dados retornados:', data);
-
-                    // Processar os dados para os gráficos
-                    const labels = data.map(item => item.name);
-                    const deliveries = data.map(item => item.deliveries);
-                    const totalDeliveries = deliveries.reduce((sum, current) => sum + current, 0);
-
-                    const deliveryData = {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Entregas por Local',
-                            data: deliveries,
-                            backgroundColor: colors.slice(0, labels.length),
-                            borderColor: 'rgba(255, 255, 255)',
-                            borderWidth: 1
-                        }]
-                    };
-
-                    const deliveryOptions = {
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    color: 'white'
-                                }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return tooltipItems[0].label;
                             },
-                            x: {
-                                ticks: {
-                                    color: 'white'
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: 'white'
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    title: function(tooltipItems) {
-                                        return tooltipItems[0].label;
-                                    },
-                                    label: function(tooltipItem) {
-                                        return tooltipItem.label + ': ' + tooltipItem.formattedValue;
-                                    }
-                                }
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.formattedValue + '%';
                             }
                         }
-                    };
-
-                    const deliveryChartCanvas = document.getElementById('deliveryChart');
-                    if (deliveryChartCanvas) {
-                        const deliveryChartCtx = deliveryChartCanvas.getContext('2d');
-                        new Chart(deliveryChartCtx, {
-                            type: 'bar',
-                            data: deliveryData,
-                            options: deliveryOptions
-                        });
                     }
+                }
+            };
 
-                    const deliveryPercentageData = {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Entregas por Local (Porcentagem)',
-                            data: deliveries.map(delivery => (delivery / totalDeliveries) * 100),
-                            backgroundColor: colors.slice(0, labels.length),
-                            borderColor: 'rgba(255, 255, 255)',
-                            borderWidth: 1
-                        }]
-                    };
-
-                    const deliveryPercentageOptions = {
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    color: 'white'
-                                }
-                            },
-                            x: {
-                                ticks: {
-                                    color: 'white'
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: 'white'
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    title: function(tooltipItems) {
-                                        return tooltipItems[0].label;
-                                    },
-                                    label: function(tooltipItem) {
-                                        return tooltipItem.label + ': ' + tooltipItem.formattedValue + '%';
-                                    }
-                                }
-                            }
-                        }
-                    };
-
-                    const deliveryPercentageChartCanvas = document.getElementById('deliveryPercentageChart');
-                    if (deliveryPercentageChartCanvas) {
-                        const deliveryPercentageChartCtx = deliveryPercentageChartCanvas.getContext('2d');
-                        new Chart(deliveryPercentageChartCtx, {
-                            type: 'pie',
-                            data: deliveryPercentageData,
-                            options: deliveryPercentageOptions
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao obter dados de entregas:', error);
+            const deliveryChartCanvas = document.getElementById('deliveryChart');
+            if (deliveryChartCanvas) {
+                const deliveryChartCtx = deliveryChartCanvas.getContext('2d');
+                new Chart(deliveryChartCtx, {
+                    type: 'bar',
+                    data: deliveryData,
+                    options: deliveryOptions
                 });
-        }
+            }
+
+            const deliveryPercentageChartCanvas = document.getElementById('deliveryPercentageChart');
+            if (deliveryPercentageChartCanvas) {
+                const deliveryPercentageChartCtx = deliveryPercentageChartCanvas.getContext('2d');
+                new Chart(deliveryPercentageChartCtx, {
+                    type: 'pie',
+                    data: deliveryData, // Reutilize os mesmos dados para o gráfico de pizza
+                    options: deliveryOptions // Reutilize as mesmas opções
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao obter dados de entregas:', error);
+        });
+}
  
     // Função para obter dados de rotatividade de estoque e produtos mais vendidos
     function getStockTurnoverData() {
