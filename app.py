@@ -1,7 +1,6 @@
 #importações de blibliotecas
 # Importações de bibliotecas
-from flask import Flask, render_template, request, redirect, ur
-l_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 import mysql.connector
 from mysql.connector import Error
