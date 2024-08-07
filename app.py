@@ -598,15 +598,21 @@ def get_deliveries_locations():
         try:
             cursor.execute("SELECT * FROM deliveries")
             deliveries = cursor.fetchall()
-            cursor.close()
-            conn.close()
+
+            if not deliveries:
+                return jsonify({
+                    'error': 'Nenhuma entrega encontrada'
+                })
 
             deliveries_counts = {}
             for delivery in deliveries:
-                if delivery['location_name'] in deliveries_counts:
-                    deliveries_counts[delivery['location_name']] += delivery['quantity']
+                location = delivery.get('location_name')
+                quantity = delivery.get('quantity', 0)
+                
+                if location in deliveries_counts:
+                    deliveries_counts[location] += quantity
                 else:
-                    deliveries_counts[delivery['location_name']] = delivery['quantity']
+                    deliveries_counts[location] = quantity
 
             total_deliveries = sum(deliveries_counts.values())
             if total_deliveries == 0:
@@ -615,20 +621,22 @@ def get_deliveries_locations():
                 percentages = {location: (quantity / total_deliveries) * 100 for location, quantity in deliveries_counts.items()}
 
             return jsonify({
-                'labels': list(percentages.keys()),
+                'labels': list(deliveries_counts.keys()),
                 'percentages': list(percentages.values())
             })
 
         except Exception as e:
-            cursor.close()
-            conn.close()
             return jsonify({
                 'error': f'Erro ao consultar entregas: {str(e)}'
             })
+        finally:
+            cursor.close()
+            conn.close()
 
     return jsonify({
         'error': 'Erro ao conectar ao banco de dados'
     })
+
 
 def check_deliveries():
     conn = get_db_connection()
