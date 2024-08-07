@@ -23,6 +23,8 @@ scheduler.start()
 
 GOOGLE_MAPS_API_KEY = 'AIzaSyCFg28W1NRnx48tyCEGVQpmPmVxOBoxOtQ'
 GEOCODE_URL = 'https://maps.googleapis.com/maps/api/geocode/json'
+MAILJET_API_KEY=da8509ab27d9c9a4458f6bfd82f78111
+MAILJET_API_SECRET=1ae46c40191b25224a6d1ac81a4d4c45
 
 # Configurações da aplicação
 app.config['SECRET_KEY'] = 'random_string'
