@@ -173,7 +173,7 @@
             });
         }
 
-        function getDeliveryData() {
+       function getDeliveryData() {
     fetch('/get_deliveries_locations')
         .then(response => {
             if (!response.ok) {
@@ -185,13 +185,15 @@
             console.log('Dados retornados:', data);
 
             const labels = data.labels;
-            const percentages = data.percentages;
+            const totals = data.totals; // Total de entregas por local
+            const percentages = data.percentages; // Porcentagens
 
+            // Configuração para o gráfico de total de entregas por local
             const deliveryData = {
                 labels: labels,
                 datasets: [{
-                    label: 'Entregas por Local',
-                    data: percentages,
+                    label: 'Total de Entregas por Local',
+                    data: totals,
                     backgroundColor: colors.slice(0, labels.length),
                     borderColor: 'rgba(255, 255, 255)',
                     borderWidth: 1
@@ -224,13 +226,14 @@
                                 return tooltipItems[0].label;
                             },
                             label: function(tooltipItem) {
-                                return tooltipItem.label + ': ' + tooltipItem.formattedValue + '%';
+                                return tooltipItem.label + ': ' + tooltipItem.formattedValue;
                             }
                         }
                     }
                 }
             };
 
+            // Renderizar o gráfico de total de entregas por local
             const deliveryChartCanvas = document.getElementById('deliveryChart');
             if (deliveryChartCanvas) {
                 const deliveryChartCtx = deliveryChartCanvas.getContext('2d');
@@ -241,13 +244,46 @@
                 });
             }
 
+            // Configuração para o gráfico de porcentagens
+            const deliveryPercentageData = {
+                labels: labels,
+                datasets: [{
+                    label: 'Entregas por Local (Porcentagem)',
+                    data: percentages,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderColor: 'rgba(255, 255, 255)',
+                    borderWidth: 1
+                }]
+            };
+
+            const deliveryPercentageOptions = {
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return tooltipItems[0].label;
+                            },
+                            label: function(tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.formattedValue + '%';
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Renderizar o gráfico de porcentagens de entregas por local
             const deliveryPercentageChartCanvas = document.getElementById('deliveryPercentageChart');
             if (deliveryPercentageChartCanvas) {
                 const deliveryPercentageChartCtx = deliveryPercentageChartCanvas.getContext('2d');
                 new Chart(deliveryPercentageChartCtx, {
                     type: 'pie',
-                    data: deliveryData, // Reutilize os mesmos dados para o gráfico de pizza
-                    options: deliveryOptions // Reutilize as mesmas opções
+                    data: deliveryPercentageData,
+                    options: deliveryPercentageOptions
                 });
             }
         })
@@ -255,6 +291,7 @@
             console.error('Erro ao obter dados de entregas:', error);
         });
 }
+
  
     // Função para obter dados de rotatividade de estoque e produtos mais vendidos
     function getStockTurnoverData() {
