@@ -595,32 +595,39 @@ def get_deliveries_locations():
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM deliveries")
-        deliveries = cursor.fetchall()
-        cursor.close()
-        conn.close()
+        try:
+            cursor.execute("SELECT * FROM deliveries")
+            deliveries = cursor.fetchall()
+            cursor.close()
+            conn.close()
 
-        deliveries_counts = {}
-        for deliveries in deliveries:
-            if deliveries['location_name'] in deliveries_counts:
-                deliveries_counts[deliveries['location_name']] += deliveries['quantity']
+            deliveries_counts = {}
+            for delivery in deliveries:
+                if delivery['location_name'] in deliveries_counts:
+                    deliveries_counts[delivery['location_name']] += delivery['quantity']
+                else:
+                    deliveries_counts[delivery['location_name']] = delivery['quantity']
+
+            total_deliveries = sum(deliveries_counts.values())
+            if total_deliveries == 0:
+                percentages = {location: 0 for location in deliveries_counts.keys()}
             else:
-                deliveries_counts[deliveries['location_name']] = deliveries['quantity']
+                percentages = {location: (quantity / total_deliveries) * 100 for location, quantity in deliveries_counts.items()}
 
-        total_deliveries = sum(deliveries_counts.values())
-        if total_deliveries == 0:
-            percentages = {location: 0 for location in deliveries_counts.keys()}
-        else:
-            percentages = {location: (quantity / total_deliveries) * 100 for location, quantity in deliveries_counts.items()}
+            return jsonify({
+                'labels': list(percentages.keys()),
+                'percentages': list(percentages.values())
+            })
 
-        return jsonify({
-            'labels': list(percentages.keys()),
-            'percentages': list(percentages.values())
-        })
+        except Exception as e:
+            cursor.close()
+            conn.close()
+            return jsonify({
+                'error': f'Erro ao consultar entregas: {str(e)}'
+            })
 
     return jsonify({
-        'labels': [],
-        'percentages': []
+        'error': 'Erro ao conectar ao banco de dados'
     })
 
 def check_deliveries():
